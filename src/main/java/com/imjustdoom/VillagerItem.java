@@ -30,7 +30,7 @@ public class VillagerItem extends GenericCustomItem {
         // info if you are having trouble with it not applying to the item. Or grab a new one from the creative menu
         super(Main.get(), "villagerinabucket", "https://i.ibb.co/sCFvQBD/q6wBozz.png");
         setName("Villager In A Bucket"); // Item name
-        setStackable(false); // Why no worky
+        setStackable(false); // It now worky
     }
 
     @Override
