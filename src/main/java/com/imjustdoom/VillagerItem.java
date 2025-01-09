@@ -43,7 +43,7 @@ public class VillagerItem extends GenericCustomItem {
         CraftVillager villager = (CraftVillager) world.spawnEntity(new Location(world, block.getX() + face.getModX(), block.getY() + face.getModY(), block.getZ() + face.getModZ()), EntityType.VILLAGER);
 
         // Check just in case it is pulled from the creative menu as it will have no lore data
-        if (!item.getItemMeta().getLore().isEmpty()) {
+        if (item.getItemMeta().hasLore() && !item.getItemMeta().getLore().isEmpty()) {
             List<String> lore = item.getItemMeta().getLore();
             villager.setProfession(Villager.Profession.valueOf(lore.get(0)));
             villager.setAge(Integer.parseInt(lore.get(1)));
