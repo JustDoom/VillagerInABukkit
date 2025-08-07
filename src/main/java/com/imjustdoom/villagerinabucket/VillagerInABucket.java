@@ -196,7 +196,8 @@ public class VillagerInABucket extends JavaPlugin implements Listener {
             return;
         }
 
-        PreVillagerPickupEvent preVillagerPickupEvent = new PreVillagerPickupEvent(clicked, player, itemStack);
+        Location location = clicked.getLocation();
+        PreVillagerPickupEvent preVillagerPickupEvent = new PreVillagerPickupEvent(clicked, player, location, itemStack);
         if (!preVillagerPickupEvent.callEvent()) {
             return;
         }
@@ -216,7 +217,7 @@ public class VillagerInABucket extends JavaPlugin implements Listener {
         clicked.remove();
         event.setCancelled(true);
 
-        VillagerPickupEvent villagerPickupEvent = new VillagerPickupEvent(clicked, player, itemStack);
+        VillagerPickupEvent villagerPickupEvent = new VillagerPickupEvent(clicked, player, location, itemStack);
         villagerPickupEvent.callEvent();
     }
 
@@ -224,6 +225,12 @@ public class VillagerInABucket extends JavaPlugin implements Listener {
     public void bucketInteract(PlayerInteractEvent event) {
         Player player = event.getPlayer();
         ItemStack itemStack = event.getItem();
+        Location location = event.getInteractionPoint();
+
+        // Ensure interaction point is not null
+        if (location == null) {
+            return;
+        }
 
         // Check if the action is related to a villager in a bucket item
         if (!event.getAction().isRightClick() || itemStack == null || !isVillagerBucket(itemStack)) {
@@ -252,12 +259,12 @@ public class VillagerInABucket extends JavaPlugin implements Listener {
             return;
         }
 
-        PreVillagerPlaceEvent preVillagerPlaceEvent = new PreVillagerPlaceEvent(entity, player, itemStack);
+        PreVillagerPlaceEvent preVillagerPlaceEvent = new PreVillagerPlaceEvent(entity, player, location, itemStack);
         if (!preVillagerPlaceEvent.callEvent()) {
             return;
         }
 
-        entity.spawnAt(event.getInteractionPoint(), CreatureSpawnEvent.SpawnReason.BUCKET);
+        entity.spawnAt(location, CreatureSpawnEvent.SpawnReason.BUCKET);
         if (player.getGameMode() != GameMode.CREATIVE) {
             itemStack.unsetData(DataComponentTypes.CUSTOM_MODEL_DATA);
             itemStack.editMeta(meta -> {
@@ -297,7 +304,7 @@ public class VillagerInABucket extends JavaPlugin implements Listener {
             }
         }
 
-        VillagerPlaceEvent villagerPlaceEvent = new VillagerPlaceEvent(entity, player, itemStack);
+        VillagerPlaceEvent villagerPlaceEvent = new VillagerPlaceEvent(entity, player, location, itemStack);
         villagerPlaceEvent.callEvent();
     }
 

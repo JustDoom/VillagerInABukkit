@@ -1,5 +1,6 @@
 package com.imjustdoom.villagerinabucket.event;
 
+import org.bukkit.Location;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.Player;
 import org.bukkit.event.Cancellable;
@@ -15,12 +16,14 @@ public class PreVillagerPlaceEvent extends EntityEvent implements Cancellable {
     private static final HandlerList HANDLER_LIST = new HandlerList();
 
     private final Player player;
+    private final Location location;
     private final ItemStack itemStack;
     private boolean cancelled;
 
-    public PreVillagerPlaceEvent(@NotNull Entity entity, @NotNull Player player, ItemStack itemStack) {
+    public PreVillagerPlaceEvent(@NotNull Entity entity, @NotNull Player player, @NotNull Location location, ItemStack itemStack) {
         super(entity);
         this.player = player;
+        this.location = location;
         this.itemStack = itemStack;
     }
 
@@ -30,6 +33,14 @@ public class PreVillagerPlaceEvent extends EntityEvent implements Cancellable {
      */
     public Player getPlayer() {
         return this.player;
+    }
+
+    /**
+     * Gets the location where the villager will be placed
+     * @return the location of the villager
+     */
+    public Location getLocation() {
+        return location;
     }
 
     /**
