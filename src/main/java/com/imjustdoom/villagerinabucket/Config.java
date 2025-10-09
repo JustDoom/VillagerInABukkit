@@ -17,6 +17,9 @@ public class Config {
     public static String RESOURCE_PACK_HASH = "f2d4dd5bf8ee221234b738236099b2592c58b8e8";
     public static String RESOURCE_PACK_ID = "68a4b411-e409-4d89-b563-66049ba4914b";
 
+    public static boolean LOG_ENABLED = true;
+    public static boolean LOG_SAVE_TO_FILE = true;
+
     public static void init() {
         VillagerInABucket.get().saveDefaultConfig();
         VillagerInABucket.get().reloadConfig();
@@ -48,5 +51,8 @@ public class Config {
         RESOURCE_PACK_URL = fileConfiguration.getString("resource-pack-url", RESOURCE_PACK_URL);
         RESOURCE_PACK_HASH = fileConfiguration.getString("resource-pack-hash", RESOURCE_PACK_HASH);
         RESOURCE_PACK_ID = fileConfiguration.getString("resource-pack-id", RESOURCE_PACK_ID);
+
+        LOG_ENABLED = fileConfiguration.getBoolean("logging.enabled", LOG_ENABLED);
+        LOG_SAVE_TO_FILE = fileConfiguration.getBoolean("logging.save_to_file", LOG_SAVE_TO_FILE);
     }
 }

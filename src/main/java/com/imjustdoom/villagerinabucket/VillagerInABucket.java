@@ -44,6 +44,7 @@ public class VillagerInABucket extends JavaPlugin implements Listener {
     public static TextColor TEXT_COLOR = TextColor.color(2, 220, 5);
 
     public NamespacedKey key = new NamespacedKey(this, "villager_data");
+    private ActionLogger actionLogger;
 
     public VillagerInABucket() {
         INSTANCE = this;
@@ -52,6 +53,7 @@ public class VillagerInABucket extends JavaPlugin implements Listener {
     @Override
     public void onEnable() {
         Config.init();
+        this.actionLogger = new ActionLogger(this.getDataFolder());
 
         this.getLifecycleManager().registerEventHandler(LifecycleEvents.COMMANDS, commands -> {
             LiteralCommandNode<CommandSourceStack> buildCommand = Commands.literal("villagerinabucket")
@@ -61,7 +63,8 @@ public class VillagerInABucket extends JavaPlugin implements Listener {
                         return Command.SINGLE_SUCCESS;
                     }).then(Commands.literal("reload").executes(ctx -> {
                         Config.init();
-                        ctx.getSource().getSender().sendMessage(Component.text(PREFIX + " BetterKeepInventory has been reloaded!", TEXT_COLOR));
+                        actionLogger.reload();
+                        ctx.getSource().getSender().sendMessage(Component.text(PREFIX + " VillagerInABucket has been reloaded!", TEXT_COLOR));
                         return Command.SINGLE_SUCCESS;
                     }))
                     .build();
@@ -72,6 +75,13 @@ public class VillagerInABucket extends JavaPlugin implements Listener {
         Metrics metrics = new Metrics(this, 25722);
         metrics.addCustomChart(new SimplePie("updated_to_new_settings", () -> String.valueOf(Config.PERMISSIONS)));
         metrics.addCustomChart(new SimplePie("usingResourcepack", () -> String.valueOf(Config.RESOURCE_PACK)));
+    }
+
+    @Override
+    public void onDisable() {
+        if (actionLogger != null) {
+            actionLogger.close();
+        }
     }
 
     @EventHandler
@@ -217,6 +227,9 @@ public class VillagerInABucket extends JavaPlugin implements Listener {
         clicked.remove();
         event.setCancelled(true);
 
+        // Log the pickup action
+        actionLogger.logPickup(player, clicked, location);
+
         VillagerPickupEvent villagerPickupEvent = new VillagerPickupEvent(clicked, player, location, itemStack);
         villagerPickupEvent.callEvent();
     }
@@ -265,6 +278,10 @@ public class VillagerInABucket extends JavaPlugin implements Listener {
         }
 
         entity.spawnAt(location, CreatureSpawnEvent.SpawnReason.BUCKET);
+
+        // Log the placement action
+        actionLogger.logPlace(player, entity, location);
+
         if (player.getGameMode() != GameMode.CREATIVE) {
             itemStack.unsetData(DataComponentTypes.CUSTOM_MODEL_DATA);
             itemStack.editMeta(meta -> {
