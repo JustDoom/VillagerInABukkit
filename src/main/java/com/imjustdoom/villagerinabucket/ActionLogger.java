@@ -60,7 +60,7 @@ public class ActionLogger {
     }
 
     private void logAction(String action, Player player, Entity entity, Location location) {
-        if (!Config.LOG_ENABLED && !Config.LOG_SAVE_TO_FILE) {
+        if (!Config.LOG_ENABLED) {
             return;
         }
 
