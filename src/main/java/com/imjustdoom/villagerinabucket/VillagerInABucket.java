@@ -61,7 +61,7 @@ public class VillagerInABucket extends JavaPlugin implements Listener {
                         return Command.SINGLE_SUCCESS;
                     }).then(Commands.literal("reload").executes(ctx -> {
                         Config.init();
-                        ctx.getSource().getSender().sendMessage(Component.text(PREFIX + " BetterKeepInventory has been reloaded!", TEXT_COLOR));
+                        ctx.getSource().getSender().sendMessage(Component.text(PREFIX + " VillagerInABucket has been reloaded!", TEXT_COLOR));
                         return Command.SINGLE_SUCCESS;
                     }))
                     .build();
