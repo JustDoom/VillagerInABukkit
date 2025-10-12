@@ -16,3 +16,8 @@ resource-pack: true
 #resource-pack-hash: "f2d4dd5bf8ee221234b738236099b2592c58b8e8"
 # The ID for the resource pack. Please do not touch unless you know what you are doing
 #resource-pack-id: "68a4b411-e409-4d89-b563-66049ba4914b"
+
+# Should any villager placing and picking up be logged to the console
+console-logging: false
+# Should any villager placing and picking up be logged to a file
+file-logging: false

@@ -33,17 +33,26 @@ import org.bukkit.persistence.PersistentDataContainer;
 import org.bukkit.persistence.PersistentDataType;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.bukkit.util.Vector;
+import org.slf4j.event.Level;
 
+import java.io.File;
+import java.io.FileWriter;
+import java.io.IOException;
 import java.net.URI;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
 public class VillagerInABucket extends JavaPlugin implements Listener {
+    private final DateTimeFormatter TIMESTAMP_FORMAT = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
+
     public static String PREFIX = "[VIAB]";
     public static TextColor TEXT_COLOR = TextColor.color(2, 220, 5);
 
     public NamespacedKey key = new NamespacedKey(this, "villager_data");
+    public FileWriter logFileWriter;
 
     public VillagerInABucket() {
         INSTANCE = this;
@@ -53,7 +62,7 @@ public class VillagerInABucket extends JavaPlugin implements Listener {
     public void onEnable() {
         Config.init();
 
-        this.getLifecycleManager().registerEventHandler(LifecycleEvents.COMMANDS, commands -> {
+        getLifecycleManager().registerEventHandler(LifecycleEvents.COMMANDS, commands -> {
             LiteralCommandNode<CommandSourceStack> buildCommand = Commands.literal("villagerinabucket")
                     .requires(sender -> sender.getSender().hasPermission("villagerinabucket.commands"))
                     .executes(ctx -> {
@@ -67,11 +76,22 @@ public class VillagerInABucket extends JavaPlugin implements Listener {
                     .build();
             commands.registrar().register(buildCommand, List.of("viab"));
         });
-        Bukkit.getPluginManager().registerEvents(this, this);
+        getServer().getPluginManager().registerEvents(this, this);
 
         Metrics metrics = new Metrics(this, 25722);
         metrics.addCustomChart(new SimplePie("updated_to_new_settings", () -> String.valueOf(Config.PERMISSIONS)));
         metrics.addCustomChart(new SimplePie("usingResourcepack", () -> String.valueOf(Config.RESOURCE_PACK)));
+    }
+
+    @Override
+    public void onDisable() {
+        if (this.logFileWriter != null) {
+            try {
+                this.logFileWriter.close();
+            } catch (IOException e) {
+                getLogger().severe("Unable to close villager action file logger");
+            }
+        }
     }
 
     @EventHandler
@@ -217,6 +237,8 @@ public class VillagerInABucket extends JavaPlugin implements Listener {
         clicked.remove();
         event.setCancelled(true);
 
+        log("PICKUP", player, clicked, location);
+
         VillagerPickupEvent villagerPickupEvent = new VillagerPickupEvent(clicked, player, location, itemStack);
         villagerPickupEvent.callEvent();
     }
@@ -304,8 +326,24 @@ public class VillagerInABucket extends JavaPlugin implements Listener {
             }
         }
 
+        log("PLACE", player, entity, location);
+
         VillagerPlaceEvent villagerPlaceEvent = new VillagerPlaceEvent(entity, player, location, itemStack);
         villagerPlaceEvent.callEvent();
+    }
+
+    public void log(String action, Player player, Entity entity, Location location) {
+        String message = String.format("[DEBUG] [%s] - Player: %s - Entity: %s - Location: %s", action, player.getName(), entity, location);
+        if (Config.CONSOLE_LOGGING) {
+            getLogger().info(message);
+        }
+        if (Config.FILE_LOGGING) {
+            try {
+                this.logFileWriter.write("[" + LocalDateTime.now().format(TIMESTAMP_FORMAT) + "] " + message + System.lineSeparator());
+            } catch (IOException e) {
+                getLogger().severe("Unable to write to log file: " + e.getMessage());
+            }
+        }
     }
 
     private static VillagerInABucket INSTANCE;

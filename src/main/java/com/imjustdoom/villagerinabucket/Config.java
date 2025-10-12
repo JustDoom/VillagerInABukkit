@@ -2,6 +2,9 @@ package com.imjustdoom.villagerinabucket;
 
 import org.bukkit.configuration.file.FileConfiguration;
 
+import java.io.File;
+import java.io.FileWriter;
+import java.io.IOException;
 import java.util.List;
 
 public class Config {
@@ -16,6 +19,9 @@ public class Config {
     public static String RESOURCE_PACK_URL = "https://github.com/JustDoom/VillagerInABukkit/releases/download/resourcepack-1.0.0/VillagerInABukkitPack.zip";
     public static String RESOURCE_PACK_HASH = "f2d4dd5bf8ee221234b738236099b2592c58b8e8";
     public static String RESOURCE_PACK_ID = "68a4b411-e409-4d89-b563-66049ba4914b";
+
+    public static boolean CONSOLE_LOGGING = false;
+    public static boolean FILE_LOGGING = false;
 
     public static void init() {
         VillagerInABucket.get().saveDefaultConfig();
@@ -48,5 +54,21 @@ public class Config {
         RESOURCE_PACK_URL = fileConfiguration.getString("resource-pack-url", RESOURCE_PACK_URL);
         RESOURCE_PACK_HASH = fileConfiguration.getString("resource-pack-hash", RESOURCE_PACK_HASH);
         RESOURCE_PACK_ID = fileConfiguration.getString("resource-pack-id", RESOURCE_PACK_ID);
+
+        CONSOLE_LOGGING = fileConfiguration.getBoolean("console-logging", CONSOLE_LOGGING);
+        FILE_LOGGING = fileConfiguration.getBoolean("file-logging", FILE_LOGGING);
+
+        if (FILE_LOGGING) {
+            try {
+                if (VillagerInABucket.get().logFileWriter != null) {
+                    VillagerInABucket.get().logFileWriter.close();
+                }
+                File logFile = new File(VillagerInABucket.get().getDataFolder(), "villager-actions.log");
+                VillagerInABucket.get().logFileWriter = new FileWriter(logFile, true);
+            } catch (IOException e) {
+                FILE_LOGGING = false;
+                VillagerInABucket.get().getLogger().severe("Unable to create a log writer for villager actions: " + e.getMessage());
+            }
+        }
     }
 }
