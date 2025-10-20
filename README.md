@@ -1,6 +1,6 @@
 # VillagerInABukkit
 
-This is a plugin port of my mod VillagerInABucket. Currently for 1.21.4 to 1.21.6
+This is a plugin port of my mod VillagerInABucket. Currently for 1.21.4 to 1.21.10
 
 ## TODO
 - [ ] Achievements
