@@ -1,11 +1,10 @@
 package com.imjustdoom.villagerinabucket;
 
-import org.bukkit.configuration.file.FileConfiguration;
-
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.util.List;
+import org.bukkit.configuration.file.FileConfiguration;
 
 public class Config {
     public static boolean PERMISSIONS = true;
@@ -16,7 +15,7 @@ public class Config {
     public static boolean HARM_REPUTATION = false;
 
     public static boolean RESOURCE_PACK = true;
-    public static String RESOURCE_PACK_URL = "https://github.com/JustDoom/VillagerInABukkit/releases/download/resourcepack-1.0.0/VillagerInABukkitPack.zip";
+    public static String RESOURCE_PACK_URL = "https://cdn.modrinth.com/data/9tf9GGch/versions/ZBgqIN0Y/VillagerInABukkitPack.zip";
     public static String RESOURCE_PACK_HASH = "f2d4dd5bf8ee221234b738236099b2592c58b8e8";
     public static String RESOURCE_PACK_ID = "68a4b411-e409-4d89-b563-66049ba4914b";
 
