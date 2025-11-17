@@ -11,7 +11,7 @@ resource-pack: true
 # If you want to override it/manually use an updated resourcepack you can uncomment and override them
 
 # The URL to download the resource pack from
-#resource-pack-url: "https://github.com/JustDoom/VillagerInABukkit/releases/download/Resourcepack-1.0.0/VillagerInABukkitPack.zip"
+#resource-pack-url: "https://cdn.modrinth.com/data/9tf9GGch/versions/ZBgqIN0Y/VillagerInABukkitPack.zip"
 # The SHA-1 hash of the resource pack ZIP
 #resource-pack-hash: "f2d4dd5bf8ee221234b738236099b2592c58b8e8"
 # The ID for the resource pack. Please do not touch unless you know what you are doing
