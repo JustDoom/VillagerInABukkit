@@ -21,6 +21,7 @@ import net.kyori.adventure.text.format.TextDecoration;
 import org.bstats.bukkit.Metrics;
 import org.bstats.charts.SimplePie;
 import org.bukkit.*;
+import org.bukkit.block.BlockFace;
 import org.bukkit.entity.*;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
@@ -247,10 +248,9 @@ public class VillagerInABucket extends JavaPlugin implements Listener {
     public void bucketInteract(PlayerInteractEvent event) {
         Player player = event.getPlayer();
         ItemStack itemStack = event.getItem();
-        Location location = event.getInteractionPoint();
 
         // Ensure interaction point is not null
-        if (location == null) {
+        if (event.getInteractionPoint() == null) {
             return;
         }
 
@@ -266,7 +266,7 @@ public class VillagerInABucket extends JavaPlugin implements Listener {
         }
 
         PersistentDataContainer dataContainer = itemStack.getItemMeta().getPersistentDataContainer();
-        Entity entity = Bukkit.getUnsafe().deserializeEntity(dataContainer.get(this.key, PersistentDataType.BYTE_ARRAY), player.getWorld());
+        LivingEntity entity = (LivingEntity) Bukkit.getUnsafe().deserializeEntity(dataContainer.get(this.key, PersistentDataType.BYTE_ARRAY), player.getWorld());
 
         if ((((!Config.VILLAGER && entity.getType() == EntityType.VILLAGER)
                 || (!Config.ZOMBIE_VILLAGER && entity.getType() == EntityType.ZOMBIE_VILLAGER)
@@ -279,6 +279,20 @@ public class VillagerInABucket extends JavaPlugin implements Listener {
                 && Config.PERMISSIONS)) {
             player.sendMessage(Component.text("You are not allowed to place this villager"));
             return;
+        }
+
+        BlockFace clickedFace = event.getBlockFace();
+        Location location = event.getInteractionPoint().clone().add(clickedFace.getModX() * 0.5f, 0, clickedFace.getModZ() * 0.5f);
+        if (clickedFace == BlockFace.DOWN) {
+            location.subtract(0, entity.getHeight(), 0);
+        }
+
+        if (player.getWorld().getBlockAt(location.clone().subtract(0, 1, 0)).isSolid()) {
+            location.setY(Math.floor(location.getY()));
+        }
+
+        if (player.getWorld().getBlockAt(location).isSolid()) {
+            location.setY(Math.floor(location.getY()) + 1);
         }
 
         PreVillagerPlaceEvent preVillagerPlaceEvent = new PreVillagerPlaceEvent(entity, player, location, itemStack);
