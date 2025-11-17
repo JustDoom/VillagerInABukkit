@@ -6,7 +6,7 @@ plugins {
 }
 
 group = "com.imjustdoom.villagerinabucket"
-if (!project.hasProperty(" ")) {
+if (!project.hasProperty("buildWithoutGitHash")) {
     fun getShortCommitHash(): Provider<String> = providers.exec {
         commandLine("git", "rev-parse", "--short", "HEAD")
     }.standardOutput.asText.map { it.trim().ifEmpty { "unknown" } }
