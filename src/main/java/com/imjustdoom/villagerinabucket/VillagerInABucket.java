@@ -6,6 +6,7 @@ import com.imjustdoom.villagerinabucket.event.PreVillagerPickupEvent;
 import com.imjustdoom.villagerinabucket.event.PreVillagerPlaceEvent;
 import com.imjustdoom.villagerinabucket.event.VillagerPickupEvent;
 import com.imjustdoom.villagerinabucket.event.VillagerPlaceEvent;
+import com.imjustdoom.villagerinabucket.listener.ReloadListener;
 import com.mojang.brigadier.Command;
 import com.mojang.brigadier.tree.LiteralCommandNode;
 import io.papermc.paper.command.brigadier.CommandSourceStack;
@@ -78,6 +79,10 @@ public class VillagerInABucket extends JavaPlugin implements Listener {
             commands.registrar().register(buildCommand, List.of("viab"));
         });
         getServer().getPluginManager().registerEvents(this, this);
+
+        if (getServer().getPluginManager().getPlugin("BetterReload") != null) {
+            getServer().getPluginManager().registerEvents(new ReloadListener(), this);
+        }
 
         Metrics metrics = new Metrics(this, 25722);
         metrics.addCustomChart(new SimplePie("updated_to_new_settings", () -> String.valueOf(Config.PERMISSIONS)));
