@@ -44,6 +44,7 @@ import java.net.URI;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.UUID;
 
@@ -235,8 +236,14 @@ public class VillagerInABucket extends JavaPlugin implements Listener {
             if (player.getGameMode() != GameMode.CREATIVE) {
                 itemStack.setAmount(itemStack.getAmount() - 1);
             }
-            player.getInventory().addItem(newStack);
+            HashMap<Integer, ItemStack> failedMap = player.getInventory().addItem(newStack);
             itemStack = newStack;
+
+            if (failedMap.size() == 1) {
+                player.dropItem((ItemStack) failedMap.values().toArray()[0]);
+            } else if (failedMap.size() > 1) {
+                getLogger().severe("Yeah somehow you ended up with multiple buckets being created. Not sure what to say here...");
+            }
         } else {
             createVillagerBucket(itemStack, clicked, player);
         }
