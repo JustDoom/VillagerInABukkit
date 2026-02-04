@@ -2,7 +2,7 @@ plugins {
     `java-library`
     `maven-publish`
     id("com.gradleup.shadow") version "8.3.5"
-    id("xyz.jpenilla.run-paper") version "2.3.1"
+    id("xyz.jpenilla.run-paper") version "3.0.2"
 }
 
 group = "com.imjustdoom.villagerinabucket"
@@ -25,7 +25,7 @@ repositories {
 }
 
 dependencies {
-    compileOnly("io.papermc.paper:paper-api:1.21.6-R0.1-SNAPSHOT")
+    compileOnly("io.papermc.paper:paper-api:1.21.11-R0.1-SNAPSHOT")
     compileOnly("com.github.amnoah.betterreload:api:v1.0.0")
     implementation("org.bstats:bstats-bukkit:3.1.0")
 }
@@ -39,7 +39,7 @@ tasks {
     javadoc {
         options.encoding = "UTF-8"
         (options as StandardJavadocDocletOptions).apply {
-            links("https://jd.papermc.io/paper/1.21.6/")
+            links("https://jd.papermc.io/paper/1.21.11/")
             title = "${project.name} ${project.version} API"
             addStringOption("Xdoclint:none", "-quiet") // Suppress warnings for missing Javadoc
         }
@@ -69,9 +69,9 @@ tasks {
     }
 
     runServer {
-        minecraftVersion("1.21.10")
+        minecraftVersion("1.21.11")
         downloadPlugins {
-            modrinth("luckperms", "v5.4.145-bukkit")
+            modrinth("luckperms", "v5.5.17-bukkit")
         }
         dependsOn(shadowJar)
     }

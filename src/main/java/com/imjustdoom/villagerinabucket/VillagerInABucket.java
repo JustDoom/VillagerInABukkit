@@ -170,8 +170,8 @@ public class VillagerInABucket extends JavaPlugin implements Listener {
                     meta.itemName(Component.text("Villager In A Bucket"));
                     List<Component> lore = new ArrayList<>();
                     lore.add(Component.text("Level: " + villager.getVillagerLevel(), TextColor.color(Color.GRAY.asRGB()), TextDecoration.ITALIC));
-                    lore.add(Component.text("Region: " + villager.getVillagerType().getKey().getKey().toUpperCase(), TextColor.color(Color.GRAY.asRGB()), TextDecoration.ITALIC));
-                    lore.add(Component.text("Profession: " + villager.getProfession(), TextColor.color(Color.GRAY.asRGB()), TextDecoration.ITALIC));
+                    lore.add(Component.text("Region: " + villager.getVillagerType().getKey(), TextColor.color(Color.GRAY.asRGB()), TextDecoration.ITALIC));
+                    lore.add(Component.text("Profession: ", TextColor.color(Color.GRAY.asRGB()), TextDecoration.ITALIC).append(Component.translatable(villager.getProfession().translationKey())));
                     if (!villager.isAdult()) {
                         lore.add(Component.text("Baby", TextColor.color(Color.GRAY.asRGB()), TextDecoration.ITALIC));
                     }
