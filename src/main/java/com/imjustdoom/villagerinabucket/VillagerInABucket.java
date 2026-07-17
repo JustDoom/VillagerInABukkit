@@ -13,6 +13,7 @@ import io.papermc.paper.command.brigadier.CommandSourceStack;
 import io.papermc.paper.command.brigadier.Commands;
 import io.papermc.paper.datacomponent.DataComponentTypes;
 import io.papermc.paper.datacomponent.item.CustomModelData;
+import io.papermc.paper.event.block.BlockPreDispenseEvent;
 import io.papermc.paper.plugin.lifecycle.event.types.LifecycleEvents;
 import net.kyori.adventure.resource.ResourcePackInfo;
 import net.kyori.adventure.text.Component;
@@ -22,7 +23,10 @@ import net.kyori.adventure.text.format.TextDecoration;
 import org.bstats.bukkit.Metrics;
 import org.bstats.charts.SimplePie;
 import org.bukkit.*;
+import org.bukkit.block.Block;
 import org.bukkit.block.BlockFace;
+import org.bukkit.block.Dispenser;
+import org.bukkit.block.data.Directional;
 import org.bukkit.entity.*;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
@@ -30,14 +34,13 @@ import org.bukkit.event.entity.CreatureSpawnEvent;
 import org.bukkit.event.player.PlayerInteractEntityEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.event.player.PlayerJoinEvent;
+import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.persistence.PersistentDataContainer;
 import org.bukkit.persistence.PersistentDataType;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.bukkit.util.Vector;
-import org.slf4j.event.Level;
 
-import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.net.URI;
@@ -358,8 +361,78 @@ public class VillagerInABucket extends JavaPlugin implements Listener {
         villagerPlaceEvent.callEvent();
     }
 
+    @EventHandler
+    public void dispenserInteract(BlockPreDispenseEvent event) {
+        ItemStack itemStack = event.getItemStack();
+
+        if (!isVillagerBucket(itemStack)) {
+            return;
+        }
+
+        Block block = event.getBlock();
+        if (!(block.getState() instanceof Dispenser dispenser)) {
+            return;
+        }
+
+        BlockFace facing = ((Directional) block.getBlockData()).getFacing();
+        Block targetBlock = block.getRelative(facing);
+        LivingEntity entity = entityFromBucket(itemStack, block.getWorld());
+        Location location = targetBlock.getLocation().add(0.5, 0, 0.5);
+        if (location.getWorld() == null) {
+            event.setCancelled(true);
+            return;
+        }
+        if (location.getWorld().getBlockAt(location.clone().subtract(0, 1, 0)).isSolid()) {
+            location.setY(Math.floor(location.getY()));
+        }
+
+            if (location.getWorld().getBlockAt(location).isSolid()) {
+                location.setY(Math.floor(location.getY()) + 1);
+            }
+
+        if (!canPlaceWithoutPlayer(entity)) {
+            event.setCancelled(true);
+            return;
+        }
+
+        event.setCancelled(true);
+
+        // paper restores the bucket if i don't delay this
+        Bukkit.getScheduler().runTask(this, () -> {
+            Inventory delayedInventory = dispenser.getInventory();
+            delayedInventory.setItem(event.getSlot(), new ItemStack(Material.BUCKET));
+        });
+
+        entity.spawnAt(location, CreatureSpawnEvent.SpawnReason.BUCKET);
+        if (!entity.isSilent()) {
+            switch (entity) {
+                case Villager villager -> {
+                    if (!entity.isSilent()) {
+                        entity.getWorld().playSound(entity.getLocation(), Sound.ENTITY_VILLAGER_CELEBRATE, 1.0f, 1.0f);
+                    }
+                }
+                case ZombieVillager zombieVillager -> {
+                    if (!entity.isSilent()) {
+                        entity.getWorld().playSound(entity.getLocation(), Sound.ENTITY_ZOMBIE_VILLAGER_AMBIENT, 1.0f, 1.0f);
+                    }
+                }
+                case WanderingTrader trader -> {
+                    if (!entity.isSilent()) {
+                        entity.getWorld().playSound(entity.getLocation(), Sound.ENTITY_WANDERING_TRADER_YES, 1.0f, 1.0f);
+                    }
+                }
+                default -> throw new IllegalStateException("Unexpected value: " + entity);
+            }
+        }
+        log("DISPENSE", "Dispenser", entity, location);
+    }
+
     public void log(String action, Player player, Entity entity, Location location) {
-        String message = String.format("[DEBUG] [%s] - Player: %s - Entity: %s - Location: %s", action, player.getName(), entity, location);
+        log(action, player.getName(), entity, location);
+    }
+
+    public void log(String action, String source, Entity entity, Location location) {
+        String message = String.format("[DEBUG] [%s] - Source: %s - Entity: %s - Location: %s", action, source, entity, location);
         if (Config.CONSOLE_LOGGING) {
             getLogger().info(message);
         }
@@ -380,5 +453,23 @@ public class VillagerInABucket extends JavaPlugin implements Listener {
      */
     public static VillagerInABucket get() {
         return INSTANCE;
+    }
+
+    private LivingEntity entityFromBucket(ItemStack itemStack, World world) {
+        PersistentDataContainer dataContainer = itemStack.getItemMeta().getPersistentDataContainer();
+        return (LivingEntity) Bukkit.getUnsafe().deserializeEntity(dataContainer.get(this.key, PersistentDataType.BYTE_ARRAY), world);
+    }
+
+    private boolean canPlaceWithoutPlayer(LivingEntity entity) {
+        if (!Config.DISABLE_PLACING_OF_DISABLED || Config.PERMISSIONS) {
+            return true;
+        }
+
+        return switch (entity.getType()) {
+            case VILLAGER -> Config.VILLAGER;
+            case ZOMBIE_VILLAGER -> Config.ZOMBIE_VILLAGER;
+            case WANDERING_TRADER -> Config.WANDERING_TRADER;
+            default -> false;
+        };
     }
 }
