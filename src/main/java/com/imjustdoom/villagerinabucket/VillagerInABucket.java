@@ -361,12 +361,11 @@ public class VillagerInABucket extends JavaPlugin implements Listener {
         villagerPlaceEvent.callEvent();
     }
 
-//a lot of code is repeated, can be refractored
     @EventHandler
     public void dispenserInteract(BlockPreDispenseEvent event) {
         ItemStack itemStack = event.getItemStack();
 
-        if (itemStack.getType() != Material.BUCKET || !isVillagerBucket(itemStack)) {
+        if (!isVillagerBucket(itemStack)) {
             return;
         }
 
@@ -379,15 +378,17 @@ public class VillagerInABucket extends JavaPlugin implements Listener {
         Block targetBlock = block.getRelative(facing);
         LivingEntity entity = entityFromBucket(itemStack, block.getWorld());
         Location location = targetBlock.getLocation().add(0.5, 0, 0.5);
-        if (location.getWorld() != null) {
-            if (location.getWorld().getBlockAt(location.clone().subtract(0, 1, 0)).isSolid()) {
-                location.setY(Math.floor(location.getY()));
-            }
+        if (location.getWorld() == null) {
+            event.setCancelled(true);
+            return;
+        }
+        if (location.getWorld().getBlockAt(location.clone().subtract(0, 1, 0)).isSolid()) {
+            location.setY(Math.floor(location.getY()));
+        }
 
             if (location.getWorld().getBlockAt(location).isSolid()) {
                 location.setY(Math.floor(location.getY()) + 1);
             }
-        }
 
         if (!canPlaceWithoutPlayer(entity)) {
             event.setCancelled(true);
@@ -460,7 +461,7 @@ public class VillagerInABucket extends JavaPlugin implements Listener {
     }
 
     private boolean canPlaceWithoutPlayer(LivingEntity entity) {
-        if (!Config.DISABLE_PLACING_OF_DISABLED) {
+        if (!Config.DISABLE_PLACING_OF_DISABLED || Config.PERMISSIONS) {
             return true;
         }
 
