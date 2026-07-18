@@ -1,10 +1,11 @@
 package com.imjustdoom.villagerinabucket;
 
+import org.bukkit.configuration.file.FileConfiguration;
+
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.util.List;
-import org.bukkit.configuration.file.FileConfiguration;
 
 public class Config {
     public static boolean PERMISSIONS = true;
@@ -59,11 +60,11 @@ public class Config {
 
         if (FILE_LOGGING) {
             try {
-                if (VillagerInABucket.get().logFileWriter != null) {
-                    VillagerInABucket.get().logFileWriter.close();
+                if (VLog.LOG_FILE_WRITER != null) {
+                    VLog.LOG_FILE_WRITER.close();
                 }
                 File logFile = new File(VillagerInABucket.get().getDataFolder(), "villager-actions.log");
-                VillagerInABucket.get().logFileWriter = new FileWriter(logFile, true);
+                VLog.LOG_FILE_WRITER = new FileWriter(logFile, true);
             } catch (IOException e) {
                 FILE_LOGGING = false;
                 VillagerInABucket.get().getLogger().severe("Unable to create a log writer for villager actions: " + e.getMessage());
