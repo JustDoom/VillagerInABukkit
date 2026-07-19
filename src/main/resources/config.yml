@@ -1,8 +1,15 @@
-# If enabled, the other options, "villager", "zombie-villager", "wandering-trader", "disable-bucket-use-on-disable" and "harm-reputation"
-# (except the resource pack options) will be ignored in favour of using permissions instead. This is the recommended method.
-# The other ones will be removed in the future. If you are switching please read https://github.com/JustDoom/VillagerInABukkit/wiki/Configuring-using-permissions
-# If you can not see the other settings listed above in this file do not worry, you have just generated it after they were deprecated, and they have not been generated for you.
-use-permissions: true
+# Should the dispenser be able to pick up or place these villager types. Since players use permissions to determine this
+# a config option is used here
+dispenser:
+  villager:
+    pickup: true
+    place: true
+  wandering-trader:
+    pickup: true
+    place: true
+  zombie-villager:
+    pickup: true
+    place: true
 
 # Should the server ask the client to download a resource pack when they join
 resource-pack: true

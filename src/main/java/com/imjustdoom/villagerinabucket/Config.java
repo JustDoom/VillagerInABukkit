@@ -1,18 +1,18 @@
 package com.imjustdoom.villagerinabucket;
 
+import org.bukkit.configuration.file.FileConfiguration;
+
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
-import java.util.List;
-import org.bukkit.configuration.file.FileConfiguration;
 
 public class Config {
-    public static volatile boolean PERMISSIONS = true;
-    public static volatile boolean VILLAGER = true;
-    public static volatile boolean ZOMBIE_VILLAGER = true;
-    public static volatile boolean WANDERING_TRADER = true;
-    public static volatile boolean DISABLE_PLACING_OF_DISABLED = false;
-    public static volatile boolean HARM_REPUTATION = false;
+    public static volatile boolean DISPENSER_VILLAGER_PICKUP = true;
+    public static volatile boolean DISPENSER_VILLAGER_PLACE = true;
+    public static volatile boolean DISPENSER_ZOMBIE_VILLAGER_PICKUP = true;
+    public static volatile boolean DISPENSER_ZOMBIE_VILLAGER_PLACE = true;
+    public static volatile boolean DISPENSER_WANDERING_TRADER_PICKUP = true;
+    public static volatile boolean DISPENSER_WANDERING_TRADER_PLACE = true;
 
     public static volatile boolean RESOURCE_PACK = true;
     public static volatile String RESOURCE_PACK_URL = "https://cdn.modrinth.com/data/9tf9GGch/versions/ZBgqIN0Y/VillagerInABukkitPack.zip";
@@ -26,28 +26,18 @@ public class Config {
         VillagerInABucket.get().saveDefaultConfig();
         VillagerInABucket.get().reloadConfig();
         FileConfiguration fileConfiguration = VillagerInABucket.get().getConfig();
-        if (!fileConfiguration.contains("use-permissions", true)) {
-            VillagerInABucket.get().getConfig().set("use-permissions", false);
-            VillagerInABucket.get().getConfig().setComments("use-permissions", List.of(
-                    "If enabled, the other options, \"villager\", \"zombie-villager\", \"wandering-trader\", \"disable-bucket-use-on-disable\" and \"harm-reputation\"",
-                    "(except the resource pack options) will be ignored in favour of using permissions instead. This is the recommended method.",
-                    "The other ones will be removed in the future"));
-            VillagerInABucket.get().saveConfig();
-            fileConfiguration = VillagerInABucket.get().getConfig();
-        } else {
-            PERMISSIONS = fileConfiguration.getBoolean("use-permissions", PERMISSIONS);
-        }
-        if (!PERMISSIONS) {
-            VillagerInABucket.get().getLogger().warning("You are currently using the old deprecated methods of configuring the server. Please switch to using permissions.");
-            VillagerInABucket.get().getLogger().warning("To do so set the 'use-permissions' config option to true. All of the permissions are given by default (Matches the old default settings) so a permission plugin such as LuckPerms should be used to configure them further.");
-            VillagerInABucket.get().getLogger().warning("The old options will be removed in a future version of the plugin. Please read this to begin the switch https://github.com/JustDoom/VillagerInABukkit/wiki/Configuring-using-permissions");
+
+        if (fileConfiguration.contains("use-permissions", true) && !fileConfiguration.getBoolean("use-permissions", true)) {
+            VLog.severe("You must update to the new permission system for configuring how buckets function: https://github.com/JustDoom/VillagerInABukkit/wiki/Configuring-using-permissions");
+            VLog.severe("If you do not update, the plugin may not function as intended");
         }
 
-        VILLAGER = fileConfiguration.getBoolean("villager", VILLAGER);
-        ZOMBIE_VILLAGER = fileConfiguration.getBoolean("zombie-villager", ZOMBIE_VILLAGER);
-        WANDERING_TRADER = fileConfiguration.getBoolean("wandering-trader", WANDERING_TRADER);
-        DISABLE_PLACING_OF_DISABLED = fileConfiguration.getBoolean("disable-bucket-use-on-disable", DISABLE_PLACING_OF_DISABLED);
-        HARM_REPUTATION = fileConfiguration.getBoolean("harm-reputation", HARM_REPUTATION);
+        DISPENSER_VILLAGER_PICKUP = fileConfiguration.getBoolean("dispenser.villager.pickup", DISPENSER_VILLAGER_PICKUP);
+        DISPENSER_VILLAGER_PLACE = fileConfiguration.getBoolean("dispenser.villager.place", DISPENSER_VILLAGER_PLACE);
+        DISPENSER_WANDERING_TRADER_PICKUP = fileConfiguration.getBoolean("dispenser.wandering-trader.pickup", DISPENSER_WANDERING_TRADER_PICKUP);
+        DISPENSER_WANDERING_TRADER_PLACE = fileConfiguration.getBoolean("dispenser.wandering-trader.place", DISPENSER_WANDERING_TRADER_PLACE);
+        DISPENSER_ZOMBIE_VILLAGER_PICKUP = fileConfiguration.getBoolean("dispenser.zombie-villager.pickup", DISPENSER_ZOMBIE_VILLAGER_PICKUP);
+        DISPENSER_ZOMBIE_VILLAGER_PLACE = fileConfiguration.getBoolean("dispenser.zombie-villager.place", DISPENSER_ZOMBIE_VILLAGER_PLACE);
 
         RESOURCE_PACK = fileConfiguration.getBoolean("resource-pack", RESOURCE_PACK);
         RESOURCE_PACK_URL = fileConfiguration.getString("resource-pack-url", RESOURCE_PACK_URL);
@@ -57,24 +47,24 @@ public class Config {
         CONSOLE_LOGGING = fileConfiguration.getBoolean("console-logging", CONSOLE_LOGGING);
         FILE_LOGGING = fileConfiguration.getBoolean("file-logging", FILE_LOGGING);
 
-        synchronized (VillagerInABucket.get().logLock) {
+        synchronized (VLog.LOG_LOCK) {
             if (FILE_LOGGING) {
                 try {
-                    if (VillagerInABucket.get().logFileWriter != null) {
-                        VillagerInABucket.get().logFileWriter.close();
-                        VillagerInABucket.get().logFileWriter = null;
+                    if (VLog.LOG_FILE_WRITER != null) {
+                        VLog.LOG_FILE_WRITER.close();
+                        VLog.LOG_FILE_WRITER = null;
                     }
                     File logFile = new File(VillagerInABucket.get().getDataFolder(), "villager-actions.log");
-                    VillagerInABucket.get().logFileWriter = new FileWriter(logFile, true);
+                    VLog.LOG_FILE_WRITER = new FileWriter(logFile, true);
                 } catch (IOException e) {
                     FILE_LOGGING = false;
                     VillagerInABucket.get().getLogger().severe("Unable to create a log writer for villager actions: " + e.getMessage());
                 }
             } else {
-                if (VillagerInABucket.get().logFileWriter != null) {
+                if (VLog.LOG_FILE_WRITER != null) {
                     try {
-                        VillagerInABucket.get().logFileWriter.close();
-                        VillagerInABucket.get().logFileWriter = null;
+                        VLog.LOG_FILE_WRITER.close();
+                        VLog.LOG_FILE_WRITER = null;
                     } catch (IOException e) {
                         VillagerInABucket.get().getLogger().severe("Unable to close log writer: " + e.getMessage());
                     }
