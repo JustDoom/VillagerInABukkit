@@ -69,7 +69,7 @@ public class BucketUtil {
             switch (entity) {
                 case Villager villager -> {
                     // Player null check since there is no player if it comes from a dispenser
-                    if (player != null && allowed(player, Config.HARM_REPUTATION, "villagerinabucket.harm-reputation")) {
+                    if (player != null && player.hasPermission("villagerinabucket.harm-reputation")) {
                         Reputation reputation = villager.getReputation(player.getUniqueId());
                         int minorRep = reputation.getReputation(ReputationType.MINOR_NEGATIVE);
                         reputation.setReputation(ReputationType.MINOR_NEGATIVE, minorRep >= 175 ? 200 : minorRep + 25);
@@ -138,12 +138,21 @@ public class BucketUtil {
     }
 
     /**
-     * Checks if the entity type is disabled and disabled types are blocked from being placed.
+     * Checks if dispensers are allowed to place this villager
      */
-    public static boolean isVillagerDisabled(LivingEntity entity) {
-        return (!Config.VILLAGER && entity.getType() == EntityType.VILLAGER)
-                || (!Config.ZOMBIE_VILLAGER && entity.getType() == EntityType.ZOMBIE_VILLAGER)
-                || (!Config.WANDERING_TRADER && entity.getType() == EntityType.WANDERING_TRADER);
+    public static boolean canDispenserPlace(LivingEntity entity) {
+        return (!Config.DISPENSER_VILLAGER_PLACE && entity.getType() == EntityType.VILLAGER)
+                || (!Config.DISPENSER_ZOMBIE_VILLAGER_PLACE && entity.getType() == EntityType.ZOMBIE_VILLAGER)
+                || (!Config.DISPENSER_WANDERING_TRADER_PLACE && entity.getType() == EntityType.WANDERING_TRADER);
+    }
+
+    /**
+     * Checks if dispensers are allowed to place this villager
+     */
+    public static boolean canDispenserPickup(LivingEntity entity) {
+        return (!Config.DISPENSER_VILLAGER_PICKUP && entity.getType() == EntityType.VILLAGER)
+                || (!Config.DISPENSER_ZOMBIE_VILLAGER_PICKUP && entity.getType() == EntityType.ZOMBIE_VILLAGER)
+                || (!Config.DISPENSER_WANDERING_TRADER_PICKUP && entity.getType() == EntityType.WANDERING_TRADER);
     }
 
     /**
@@ -152,9 +161,9 @@ public class BucketUtil {
      */
     public static boolean canPickup(Player player, EntityType type) {
         return switch (type) {
-            case VILLAGER -> allowed(player, Config.VILLAGER, "villagerinabucket.villager.pickup");
-            case ZOMBIE_VILLAGER -> allowed(player, Config.ZOMBIE_VILLAGER, "villagerinabucket.zombie_villager.pickup");
-            case WANDERING_TRADER -> allowed(player, Config.WANDERING_TRADER, "villagerinabucket.wandering_trader.pickup");
+            case VILLAGER -> player.hasPermission("villagerinabucket.villager.pickup");
+            case ZOMBIE_VILLAGER -> player.hasPermission("villagerinabucket.zombie_villager.pickup");
+            case WANDERING_TRADER -> player.hasPermission("villagerinabucket.wandering_trader.pickup");
             default -> false;
         };
     }
@@ -164,18 +173,11 @@ public class BucketUtil {
      * per-type place permission or the disabled-placing config rule.
      */
     public static boolean canPlace(Player player, LivingEntity entity) {
-        if (!Config.PERMISSIONS) {
-            return !(isVillagerDisabled(entity) && Config.DISABLE_PLACING_OF_DISABLED);
-        }
         return switch (entity.getType()) {
             case VILLAGER -> player.hasPermission("villagerinabucket.villager.place");
             case ZOMBIE_VILLAGER -> player.hasPermission("villagerinabucket.zombie_villager.place");
             case WANDERING_TRADER -> player.hasPermission("villagerinabucket.wandering_trader.place");
             default -> true;
         };
-    }
-
-    private static boolean allowed(Player player, boolean enabled, String permission) {
-        return Config.PERMISSIONS ? player.hasPermission(permission) : enabled;
     }
 }

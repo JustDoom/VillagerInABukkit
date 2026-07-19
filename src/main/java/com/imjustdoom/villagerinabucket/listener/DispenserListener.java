@@ -1,7 +1,6 @@
 package com.imjustdoom.villagerinabucket.listener;
 
 import com.imjustdoom.villagerinabucket.BucketUtil;
-import com.imjustdoom.villagerinabucket.Config;
 import com.imjustdoom.villagerinabucket.VLog;
 import io.papermc.paper.event.block.BlockPreDispenseEvent;
 import org.bukkit.Location;
@@ -43,14 +42,7 @@ public class DispenserListener implements Listener {
         Block targetBlock = block.getRelative(blockFacing);
         LivingEntity entity = BucketUtil.entityFromBucket(itemStack, block.getWorld());
 
-        if (!Config.PERMISSIONS) {
-            VLog.severe("""
-                    Not using the new permissions system is about to be removed. Please update otherwise the plugin may not function as intended:
-                    Follow this to understand how https://github.com/JustDoom/VillagerInABukkit/wiki/Configuring-using-permissions
-                    """);
-        }
-
-        if (BucketUtil.isVillagerDisabled(entity) && Config.DISABLE_PLACING_OF_DISABLED) {
+        if (!BucketUtil.canDispenserPlace(entity)) {
             VLog.log(String.format("Attempted to place disabled villager (%s) at %s", entity.getType(), targetBlock.getLocation()));
             return;
         }
@@ -89,14 +81,7 @@ public class DispenserListener implements Listener {
                 continue;
             }
 
-            if (!Config.PERMISSIONS) {
-                VLog.severe("""
-                    Not using the new permissions system is about to be removed. Please update otherwise the plugin may not function as intended:
-                    Follow this to understand how https://github.com/JustDoom/VillagerInABukkit/wiki/Configuring-using-permissions
-                    """);
-            }
-
-            if (BucketUtil.isVillagerDisabled(entity)) {
+            if (!BucketUtil.canDispenserPickup(entity)) {
                 VLog.log(String.format("Attempted to pickup disabled villager (%s) at %s", entity.getType(), targetBlock.getLocation()));
                 return;
             }

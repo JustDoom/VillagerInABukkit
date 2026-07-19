@@ -61,7 +61,7 @@ public class VillagerInABucket extends JavaPlugin implements Listener {
         }
 
         Metrics metrics = new Metrics(this, 25722);
-        metrics.addCustomChart(new SimplePie("updated_to_new_settings", () -> String.valueOf(Config.PERMISSIONS)));
+        metrics.addCustomChart(new SimplePie("updated_to_new_settings", () -> "true"));
         metrics.addCustomChart(new SimplePie("usingResourcepack", () -> String.valueOf(Config.RESOURCE_PACK)));
     }
 
