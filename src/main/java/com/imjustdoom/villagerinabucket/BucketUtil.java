@@ -8,7 +8,9 @@ import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.TextColor;
 import net.kyori.adventure.text.format.TextDecoration;
 import org.bukkit.*;
+import org.bukkit.craftbukkit.entity.CraftVillager;
 import org.bukkit.entity.*;
+import org.bukkit.entity.memory.MemoryKey;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.persistence.PersistentDataContainer;
 import org.bukkit.persistence.PersistentDataType;
@@ -75,6 +77,13 @@ public class BucketUtil {
                         reputation.setReputation(ReputationType.MINOR_NEGATIVE, minorRep >= 175 ? 200 : minorRep + 25);
                         villager.setReputation(player.getUniqueId(), reputation);
                     }
+
+                    // Clear the POIs so other Villagers can access them, and they are not stuck in limbo
+                    ((CraftVillager) villager).getHandle().releaseAllPois();
+                    villager.setMemory(MemoryKey.HOME, null);
+                    villager.setMemory(MemoryKey.JOB_SITE, null);
+                    villager.setMemory(MemoryKey.POTENTIAL_JOB_SITE, null);
+                    villager.setMemory(MemoryKey.MEETING_POINT, null);
 
                     meta.itemName(Component.text("Villager In A Bucket"));
                     List<Component> lore = new ArrayList<>();

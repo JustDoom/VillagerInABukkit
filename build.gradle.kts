@@ -2,6 +2,7 @@ plugins {
     `java-library`
     `maven-publish`
     id("com.gradleup.shadow") version "9.4.1"
+    id("io.papermc.paperweight.userdev") version "2.0.0-beta.21"
     id("xyz.jpenilla.run-paper") version "3.0.2"
 }
 
@@ -25,9 +26,9 @@ repositories {
 }
 
 dependencies {
-    compileOnly("io.papermc.paper:paper-api:26.1.2.build.+")
     compileOnly("com.github.amnoah.betterreload:api:v1.0.0")
     implementation("org.bstats:bstats-bukkit:3.1.0")
+    paperweight.paperDevBundle("26.1.2.build.+")
 }
 
 java {
