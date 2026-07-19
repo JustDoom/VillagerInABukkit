@@ -45,6 +45,7 @@ public class InteractListener implements Listener {
         }
 
         if (!BucketUtil.canPickup(player, clicked.getType())) {
+            player.sendMessage(Component.text("You are not allowed to pickup this villager"));
             return;
         }
 

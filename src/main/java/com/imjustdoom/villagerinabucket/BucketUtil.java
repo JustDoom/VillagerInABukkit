@@ -126,17 +126,17 @@ public class BucketUtil {
     public static void playPlaceSound(LivingEntity entity) {
         if (!entity.isSilent()) {
             switch (entity) {
-                case Villager villager -> {
+                case Villager ignored -> {
                     if (!entity.isSilent()) {
                         entity.getWorld().playSound(entity.getLocation(), Sound.ENTITY_VILLAGER_CELEBRATE, 1.0f, 1.0f);
                     }
                 }
-                case ZombieVillager zombieVillager -> {
+                case ZombieVillager ignored -> {
                     if (!entity.isSilent()) {
                         entity.getWorld().playSound(entity.getLocation(), Sound.ENTITY_ZOMBIE_VILLAGER_AMBIENT, 1.0f, 1.0f);
                     }
                 }
-                case WanderingTrader trader -> {
+                case WanderingTrader ignored -> {
                     if (!entity.isSilent()) {
                         entity.getWorld().playSound(entity.getLocation(), Sound.ENTITY_WANDERING_TRADER_YES, 1.0f, 1.0f);
                     }
@@ -150,18 +150,18 @@ public class BucketUtil {
      * Checks if dispensers are allowed to place this villager
      */
     public static boolean canDispenserPlace(LivingEntity entity) {
-        return (!Config.DISPENSER_VILLAGER_PLACE && entity.getType() == EntityType.VILLAGER)
-                || (!Config.DISPENSER_ZOMBIE_VILLAGER_PLACE && entity.getType() == EntityType.ZOMBIE_VILLAGER)
-                || (!Config.DISPENSER_WANDERING_TRADER_PLACE && entity.getType() == EntityType.WANDERING_TRADER);
+        return (Config.DISPENSER_VILLAGER_PLACE && entity.getType() == EntityType.VILLAGER)
+                || (Config.DISPENSER_ZOMBIE_VILLAGER_PLACE && entity.getType() == EntityType.ZOMBIE_VILLAGER)
+                || (Config.DISPENSER_WANDERING_TRADER_PLACE && entity.getType() == EntityType.WANDERING_TRADER);
     }
 
     /**
      * Checks if dispensers are allowed to place this villager
      */
     public static boolean canDispenserPickup(LivingEntity entity) {
-        return (!Config.DISPENSER_VILLAGER_PICKUP && entity.getType() == EntityType.VILLAGER)
-                || (!Config.DISPENSER_ZOMBIE_VILLAGER_PICKUP && entity.getType() == EntityType.ZOMBIE_VILLAGER)
-                || (!Config.DISPENSER_WANDERING_TRADER_PICKUP && entity.getType() == EntityType.WANDERING_TRADER);
+        return (Config.DISPENSER_VILLAGER_PICKUP && entity.getType() == EntityType.VILLAGER)
+                || (Config.DISPENSER_ZOMBIE_VILLAGER_PICKUP && entity.getType() == EntityType.ZOMBIE_VILLAGER)
+                || (Config.DISPENSER_WANDERING_TRADER_PICKUP && entity.getType() == EntityType.WANDERING_TRADER);
     }
 
     /**
