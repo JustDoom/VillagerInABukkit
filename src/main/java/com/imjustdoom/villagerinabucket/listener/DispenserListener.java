@@ -2,6 +2,10 @@ package com.imjustdoom.villagerinabucket.listener;
 
 import com.imjustdoom.villagerinabucket.BucketUtil;
 import com.imjustdoom.villagerinabucket.VLog;
+import com.imjustdoom.villagerinabucket.event.PreVillagerDispenserPickupEvent;
+import com.imjustdoom.villagerinabucket.event.PreVillagerDispenserPlaceEvent;
+import com.imjustdoom.villagerinabucket.event.VillagerDispenserPickupEvent;
+import com.imjustdoom.villagerinabucket.event.VillagerDispenserPlaceEvent;
 import io.papermc.paper.event.block.BlockPreDispenseEvent;
 import org.bukkit.Location;
 import org.bukkit.Material;
@@ -60,12 +64,18 @@ public class DispenserListener implements Listener {
             location.setY(Math.floor(location.getY()) + 1);
         }
 
-        dispenser.getInventory().setItem(event.getSlot(), new ItemStack(Material.BUCKET));
+        PreVillagerDispenserPlaceEvent preVillagerDispenserPlaceEvent = new PreVillagerDispenserPlaceEvent(entity, dispenser, targetBlock.getLocation(), itemStack);
+        if (!preVillagerDispenserPlaceEvent.callEvent()) {
+            return;
+        }
 
+        dispenser.getInventory().setItem(event.getSlot(), new ItemStack(Material.BUCKET));
         entity.spawnAt(location, CreatureSpawnEvent.SpawnReason.BUCKET);
         BucketUtil.playPlaceSound(entity);
 
         VLog.debug("DISPENSE", "Dispenser", entity, location);
+        VillagerDispenserPlaceEvent villagerDispenserPlaceEvent = new VillagerDispenserPlaceEvent(entity, dispenser, entity.getLocation(), itemStack);
+        villagerDispenserPlaceEvent.callEvent();
     }
 
     private void pickupVillager(BlockPreDispenseEvent event, Block block, ItemStack itemStack, Dispenser dispenser) {
@@ -86,6 +96,11 @@ public class DispenserListener implements Listener {
                 return;
             }
 
+            PreVillagerDispenserPickupEvent preVillagerDispenserPickupEvent = new PreVillagerDispenserPickupEvent(entity, dispenser, targetBlock.getLocation(), itemStack);
+            if (!preVillagerDispenserPickupEvent.callEvent()) {
+                return;
+            }
+
             event.setCancelled(true);
 
             // Handle single or multiple bucket stacks
@@ -94,6 +109,7 @@ public class DispenserListener implements Listener {
                 BucketUtil.createVillagerBucket(newStack, entity, null);
                 itemStack.setAmount(itemStack.getAmount() - 1);
                 HashMap<Integer, ItemStack> failedMap = dispenser.getInventory().addItem(newStack);
+                itemStack = newStack;
 
                 if (!failedMap.isEmpty()) {
                     block.getWorld().dropItem(targetBlock.getLocation().add(0.5, 0.5, 0.5), failedMap.get(0));
@@ -102,6 +118,10 @@ public class DispenserListener implements Listener {
                 BucketUtil.createVillagerBucket(itemStack, entity, null);
             }
             entity.remove();
+
+            VLog.debug("PICKUP", "Dispenser", entity, entity.getLocation());
+            VillagerDispenserPickupEvent villagerPickupEvent = new VillagerDispenserPickupEvent(entity, dispenser, entity.getLocation(), itemStack);
+            villagerPickupEvent.callEvent();
 
             break;
         }
