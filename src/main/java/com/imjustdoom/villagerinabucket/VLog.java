@@ -13,6 +13,7 @@ public class VLog {
     private static final DateTimeFormatter TIMESTAMP_FORMAT = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
 
     public static FileWriter LOG_FILE_WRITER;
+    public static final Object LOG_LOCK = new Object();
 
     public static void log(String log) {
         VillagerInABucket.get().getLogger().info(log);
@@ -32,10 +33,15 @@ public class VLog {
             VillagerInABucket.get().getLogger().info(message);
         }
         if (Config.FILE_LOGGING) {
-            try {
-                LOG_FILE_WRITER.write("[" + LocalDateTime.now().format(TIMESTAMP_FORMAT) + "] " + message + System.lineSeparator());
-            } catch (IOException e) {
-                VillagerInABucket.get().getLogger().severe("Unable to write to log file: " + e.getMessage());
+            synchronized (LOG_LOCK) {
+                if (LOG_FILE_WRITER != null) {
+                    try {
+                        LOG_FILE_WRITER.write("[" + LocalDateTime.now().format(TIMESTAMP_FORMAT) + "] " + message + System.lineSeparator());
+                        LOG_FILE_WRITER.flush();
+                    } catch (IOException e) {
+                        VillagerInABucket.get().getLogger().severe("Unable to write to log file: " + e.getMessage());
+                    }
+                }
             }
         }
     }

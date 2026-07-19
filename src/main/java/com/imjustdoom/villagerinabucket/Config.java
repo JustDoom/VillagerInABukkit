@@ -7,20 +7,20 @@ import java.io.FileWriter;
 import java.io.IOException;
 
 public class Config {
-    public static boolean DISPENSER_VILLAGER_PICKUP = true;
-    public static boolean DISPENSER_VILLAGER_PLACE = true;
-    public static boolean DISPENSER_ZOMBIE_VILLAGER_PICKUP = true;
-    public static boolean DISPENSER_ZOMBIE_VILLAGER_PLACE = true;
-    public static boolean DISPENSER_WANDERING_TRADER_PICKUP = true;
-    public static boolean DISPENSER_WANDERING_TRADER_PLACE = true;
+    public static volatile boolean DISPENSER_VILLAGER_PICKUP = true;
+    public static volatile boolean DISPENSER_VILLAGER_PLACE = true;
+    public static volatile boolean DISPENSER_ZOMBIE_VILLAGER_PICKUP = true;
+    public static volatile boolean DISPENSER_ZOMBIE_VILLAGER_PLACE = true;
+    public static volatile boolean DISPENSER_WANDERING_TRADER_PICKUP = true;
+    public static volatile boolean DISPENSER_WANDERING_TRADER_PLACE = true;
 
-    public static boolean RESOURCE_PACK = true;
-    public static String RESOURCE_PACK_URL = "https://cdn.modrinth.com/data/9tf9GGch/versions/ZBgqIN0Y/VillagerInABukkitPack.zip";
-    public static String RESOURCE_PACK_HASH = "f2d4dd5bf8ee221234b738236099b2592c58b8e8";
-    public static String RESOURCE_PACK_ID = "68a4b411-e409-4d89-b563-66049ba4914b";
+    public static volatile boolean RESOURCE_PACK = true;
+    public static volatile String RESOURCE_PACK_URL = "https://cdn.modrinth.com/data/9tf9GGch/versions/ZBgqIN0Y/VillagerInABukkitPack.zip";
+    public static volatile String RESOURCE_PACK_HASH = "f2d4dd5bf8ee221234b738236099b2592c58b8e8";
+    public static volatile String RESOURCE_PACK_ID = "68a4b411-e409-4d89-b563-66049ba4914b";
 
-    public static boolean CONSOLE_LOGGING = false;
-    public static boolean FILE_LOGGING = false;
+    public static volatile boolean CONSOLE_LOGGING = false;
+    public static volatile boolean FILE_LOGGING = false;
 
     public static void init() {
         VillagerInABucket.get().saveDefaultConfig();
@@ -47,16 +47,28 @@ public class Config {
         CONSOLE_LOGGING = fileConfiguration.getBoolean("console-logging", CONSOLE_LOGGING);
         FILE_LOGGING = fileConfiguration.getBoolean("file-logging", FILE_LOGGING);
 
-        if (FILE_LOGGING) {
-            try {
-                if (VLog.LOG_FILE_WRITER != null) {
-                    VLog.LOG_FILE_WRITER.close();
+        synchronized (VLog.LOG_LOCK) {
+            if (FILE_LOGGING) {
+                try {
+                    if (VLog.LOG_FILE_WRITER != null) {
+                        VLog.LOG_FILE_WRITER.close();
+                        VLog.LOG_FILE_WRITER = null;
+                    }
+                    File logFile = new File(VillagerInABucket.get().getDataFolder(), "villager-actions.log");
+                    VLog.LOG_FILE_WRITER = new FileWriter(logFile, true);
+                } catch (IOException e) {
+                    FILE_LOGGING = false;
+                    VillagerInABucket.get().getLogger().severe("Unable to create a log writer for villager actions: " + e.getMessage());
                 }
-                File logFile = new File(VillagerInABucket.get().getDataFolder(), "villager-actions.log");
-                VLog.LOG_FILE_WRITER = new FileWriter(logFile, true);
-            } catch (IOException e) {
-                FILE_LOGGING = false;
-                VillagerInABucket.get().getLogger().severe("Unable to create a log writer for villager actions: " + e.getMessage());
+            } else {
+                if (VLog.LOG_FILE_WRITER != null) {
+                    try {
+                        VLog.LOG_FILE_WRITER.close();
+                        VLog.LOG_FILE_WRITER = null;
+                    } catch (IOException e) {
+                        VillagerInABucket.get().getLogger().severe("Unable to close log writer: " + e.getMessage());
+                    }
+                }
             }
         }
     }

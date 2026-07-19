@@ -30,6 +30,7 @@ public class VillagerInABucket extends JavaPlugin implements Listener {
 
     public NamespacedKey key = new NamespacedKey(this, "villager_data");
 
+
     public VillagerInABucket() {
         INSTANCE = this;
     }
@@ -67,11 +68,14 @@ public class VillagerInABucket extends JavaPlugin implements Listener {
 
     @Override
     public void onDisable() {
-        if (VLog.LOG_FILE_WRITER != null) {
-            try {
-                VLog.LOG_FILE_WRITER.close();
-            } catch (IOException e) {
-                getLogger().severe("Unable to close villager action file logger");
+        synchronized (VLog.LOG_LOCK) {
+            if (VLog.LOG_FILE_WRITER != null) {
+                try {
+                    VLog.LOG_FILE_WRITER.close();
+                    VLog.LOG_FILE_WRITER = null;
+                } catch (IOException e) {
+                    getLogger().severe("Unable to close villager action file logger");
+                }
             }
         }
     }
@@ -87,6 +91,7 @@ public class VillagerInABucket extends JavaPlugin implements Listener {
             getLogger().severe("The UUID '" + Config.RESOURCE_PACK_ID + "' is invalid");
         }
     }
+
 
     private static VillagerInABucket INSTANCE;
 

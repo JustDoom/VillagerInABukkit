@@ -5,6 +5,7 @@ api-version: '26.1.2'
 description: Plugin version of Villager In A Bucket
 author: JustDoom
 website: https://imjustdoom.com
+folia-supported: true
 
 permissions:
   villagerinabucket.commands:
