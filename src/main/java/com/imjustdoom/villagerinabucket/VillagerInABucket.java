@@ -56,6 +56,7 @@ public class VillagerInABucket extends JavaPlugin implements Listener {
 
     public NamespacedKey key = new NamespacedKey(this, "villager_data");
     public FileWriter logFileWriter;
+    public final Object logLock = new Object();
 
     public VillagerInABucket() {
         INSTANCE = this;
@@ -92,11 +93,14 @@ public class VillagerInABucket extends JavaPlugin implements Listener {
 
     @Override
     public void onDisable() {
-        if (this.logFileWriter != null) {
-            try {
-                this.logFileWriter.close();
-            } catch (IOException e) {
-                getLogger().severe("Unable to close villager action file logger");
+        synchronized (logLock) {
+            if (this.logFileWriter != null) {
+                try {
+                    this.logFileWriter.close();
+                    this.logFileWriter = null;
+                } catch (IOException e) {
+                    getLogger().severe("Unable to close villager action file logger");
+                }
             }
         }
     }
@@ -364,10 +368,15 @@ public class VillagerInABucket extends JavaPlugin implements Listener {
             getLogger().info(message);
         }
         if (Config.FILE_LOGGING) {
-            try {
-                this.logFileWriter.write("[" + LocalDateTime.now().format(TIMESTAMP_FORMAT) + "] " + message + System.lineSeparator());
-            } catch (IOException e) {
-                getLogger().severe("Unable to write to log file: " + e.getMessage());
+            synchronized (logLock) {
+                if (this.logFileWriter != null) {
+                    try {
+                        this.logFileWriter.write("[" + LocalDateTime.now().format(TIMESTAMP_FORMAT) + "] " + message + System.lineSeparator());
+                        this.logFileWriter.flush();
+                    } catch (IOException e) {
+                        getLogger().severe("Unable to write to log file: " + e.getMessage());
+                    }
+                }
             }
         }
     }

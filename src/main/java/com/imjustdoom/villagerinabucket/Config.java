@@ -7,20 +7,20 @@ import java.util.List;
 import org.bukkit.configuration.file.FileConfiguration;
 
 public class Config {
-    public static boolean PERMISSIONS = true;
-    public static boolean VILLAGER = true;
-    public static boolean ZOMBIE_VILLAGER = true;
-    public static boolean WANDERING_TRADER = true;
-    public static boolean DISABLE_PLACING_OF_DISABLED = false;
-    public static boolean HARM_REPUTATION = false;
+    public static volatile boolean PERMISSIONS = true;
+    public static volatile boolean VILLAGER = true;
+    public static volatile boolean ZOMBIE_VILLAGER = true;
+    public static volatile boolean WANDERING_TRADER = true;
+    public static volatile boolean DISABLE_PLACING_OF_DISABLED = false;
+    public static volatile boolean HARM_REPUTATION = false;
 
-    public static boolean RESOURCE_PACK = true;
-    public static String RESOURCE_PACK_URL = "https://cdn.modrinth.com/data/9tf9GGch/versions/ZBgqIN0Y/VillagerInABukkitPack.zip";
-    public static String RESOURCE_PACK_HASH = "f2d4dd5bf8ee221234b738236099b2592c58b8e8";
-    public static String RESOURCE_PACK_ID = "68a4b411-e409-4d89-b563-66049ba4914b";
+    public static volatile boolean RESOURCE_PACK = true;
+    public static volatile String RESOURCE_PACK_URL = "https://cdn.modrinth.com/data/9tf9GGch/versions/ZBgqIN0Y/VillagerInABukkitPack.zip";
+    public static volatile String RESOURCE_PACK_HASH = "f2d4dd5bf8ee221234b738236099b2592c58b8e8";
+    public static volatile String RESOURCE_PACK_ID = "68a4b411-e409-4d89-b563-66049ba4914b";
 
-    public static boolean CONSOLE_LOGGING = false;
-    public static boolean FILE_LOGGING = false;
+    public static volatile boolean CONSOLE_LOGGING = false;
+    public static volatile boolean FILE_LOGGING = false;
 
     public static void init() {
         VillagerInABucket.get().saveDefaultConfig();
@@ -57,16 +57,28 @@ public class Config {
         CONSOLE_LOGGING = fileConfiguration.getBoolean("console-logging", CONSOLE_LOGGING);
         FILE_LOGGING = fileConfiguration.getBoolean("file-logging", FILE_LOGGING);
 
-        if (FILE_LOGGING) {
-            try {
-                if (VillagerInABucket.get().logFileWriter != null) {
-                    VillagerInABucket.get().logFileWriter.close();
+        synchronized (VillagerInABucket.get().logLock) {
+            if (FILE_LOGGING) {
+                try {
+                    if (VillagerInABucket.get().logFileWriter != null) {
+                        VillagerInABucket.get().logFileWriter.close();
+                        VillagerInABucket.get().logFileWriter = null;
+                    }
+                    File logFile = new File(VillagerInABucket.get().getDataFolder(), "villager-actions.log");
+                    VillagerInABucket.get().logFileWriter = new FileWriter(logFile, true);
+                } catch (IOException e) {
+                    FILE_LOGGING = false;
+                    VillagerInABucket.get().getLogger().severe("Unable to create a log writer for villager actions: " + e.getMessage());
                 }
-                File logFile = new File(VillagerInABucket.get().getDataFolder(), "villager-actions.log");
-                VillagerInABucket.get().logFileWriter = new FileWriter(logFile, true);
-            } catch (IOException e) {
-                FILE_LOGGING = false;
-                VillagerInABucket.get().getLogger().severe("Unable to create a log writer for villager actions: " + e.getMessage());
+            } else {
+                if (VillagerInABucket.get().logFileWriter != null) {
+                    try {
+                        VillagerInABucket.get().logFileWriter.close();
+                        VillagerInABucket.get().logFileWriter = null;
+                    } catch (IOException e) {
+                        VillagerInABucket.get().getLogger().severe("Unable to close log writer: " + e.getMessage());
+                    }
+                }
             }
         }
     }
