@@ -64,10 +64,8 @@ public class InteractListener implements Listener {
             HashMap<Integer, ItemStack> failedMap = player.getInventory().addItem(newStack);
             itemStack = newStack;
 
-            if (failedMap.size() == 1) {
-                player.dropItem((ItemStack) failedMap.values().toArray()[0]);
-            } else if (failedMap.size() > 1) {
-                VLog.severe("Yeah somehow you ended up with multiple buckets being created. Not sure what to say here...");
+            if (!failedMap.isEmpty()) {
+                player.dropItem(failedMap.get(0));
             }
         } else {
             BucketUtil.createVillagerBucket(itemStack, clicked, player);

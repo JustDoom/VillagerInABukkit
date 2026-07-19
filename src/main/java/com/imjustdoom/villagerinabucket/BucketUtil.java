@@ -14,6 +14,7 @@ import org.bukkit.persistence.PersistentDataContainer;
 import org.bukkit.persistence.PersistentDataType;
 import org.bukkit.util.Vector;
 
+import javax.annotation.Nullable;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -38,7 +39,7 @@ public class BucketUtil {
      * @param entity the entity to store in the bucket
      * @param player the player who is picking it up
      */
-    public static void createVillagerBucket(ItemStack itemStack, Entity entity, Player player) {
+    public static void createVillagerBucket(ItemStack itemStack, Entity entity, @Nullable Player player) {
         // Reset velocity and fall distance in case of catching a villager when falling so it doesn't add up
         entity.setVelocity(new Vector(0, 0, 0));
         entity.setFallDistance(0);
@@ -46,19 +47,19 @@ public class BucketUtil {
         switch (entity) {
             case Villager villager -> {
                 if (!entity.isSilent()) {
-                    player.getWorld().playSound(entity.getLocation(), Sound.ENTITY_VILLAGER_NO, 1.0f, 1.0f);
+                    entity.getWorld().playSound(entity.getLocation(), Sound.ENTITY_VILLAGER_NO, 1.0f, 1.0f);
                 }
                 itemStack.setData(DataComponentTypes.CUSTOM_MODEL_DATA, CustomModelData.customModelData().addString(villager.getVillagerType().key().value()).build());
             }
             case ZombieVillager ignored -> {
                 if (!entity.isSilent()) {
-                    player.getWorld().playSound(entity.getLocation(), Sound.ENTITY_ZOMBIE_VILLAGER_AMBIENT, 1.0f, 1.0f);
+                    entity.getWorld().playSound(entity.getLocation(), Sound.ENTITY_ZOMBIE_VILLAGER_AMBIENT, 1.0f, 1.0f);
                 }
                 itemStack.setData(DataComponentTypes.CUSTOM_MODEL_DATA, CustomModelData.customModelData().addString("zombie_villager").build());
             }
             case WanderingTrader ignored -> {
                 if (!entity.isSilent()) {
-                    player.getWorld().playSound(entity.getLocation(), Sound.ENTITY_WANDERING_TRADER_NO, 1.0f, 1.0f);
+                    entity.getWorld().playSound(entity.getLocation(), Sound.ENTITY_WANDERING_TRADER_NO, 1.0f, 1.0f);
                 }
                 itemStack.setData(DataComponentTypes.CUSTOM_MODEL_DATA, CustomModelData.customModelData().addString("wandering_trader").build());
             }
@@ -67,7 +68,8 @@ public class BucketUtil {
         itemStack.editMeta(meta -> {
             switch (entity) {
                 case Villager villager -> {
-                    if ((Config.HARM_REPUTATION && !Config.PERMISSIONS) || (Config.PERMISSIONS && player.hasPermission("villagerinabucket.harm-reputation"))) {
+                    // Player null check since there is no player if it comes from a dispenser
+                    if (player != null && allowed(player, Config.HARM_REPUTATION, "villagerinabucket.harm-reputation")) {
                         Reputation reputation = villager.getReputation(player.getUniqueId());
                         int minorRep = reputation.getReputation(ReputationType.MINOR_NEGATIVE);
                         reputation.setReputation(ReputationType.MINOR_NEGATIVE, minorRep >= 175 ? 200 : minorRep + 25);
@@ -139,9 +141,9 @@ public class BucketUtil {
      * Checks if the entity type is disabled and disabled types are blocked from being placed.
      */
     public static boolean isVillagerDisabled(LivingEntity entity) {
-        return ((!Config.VILLAGER && entity.getType() == EntityType.VILLAGER)
+        return (!Config.VILLAGER && entity.getType() == EntityType.VILLAGER)
                 || (!Config.ZOMBIE_VILLAGER && entity.getType() == EntityType.ZOMBIE_VILLAGER)
-                || (!Config.WANDERING_TRADER && entity.getType() == EntityType.WANDERING_TRADER));
+                || (!Config.WANDERING_TRADER && entity.getType() == EntityType.WANDERING_TRADER);
     }
 
     /**
