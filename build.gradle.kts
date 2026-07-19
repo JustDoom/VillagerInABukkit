@@ -72,7 +72,7 @@ tasks {
     runServer {
         minecraftVersion("26.1.2")
         downloadPlugins {
-//            modrinth("luckperms", "v5.5.17-bukkit")
+            modrinth("luckperms", "v5.5.53-bukkit")
         }
         dependsOn(shadowJar)
     }
