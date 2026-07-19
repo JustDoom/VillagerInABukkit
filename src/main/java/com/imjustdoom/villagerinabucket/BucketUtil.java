@@ -112,19 +112,6 @@ public class BucketUtil {
         return (LivingEntity) Bukkit.getUnsafe().deserializeEntity(dataContainer.get(VillagerInABucket.get().key, PersistentDataType.BYTE_ARRAY), world);
     }
 
-    public static boolean canPlaceWithoutPlayer(LivingEntity entity) {
-        if (!Config.DISABLE_PLACING_OF_DISABLED || Config.PERMISSIONS) {
-            return true;
-        }
-
-        return switch (entity.getType()) {
-            case VILLAGER -> Config.VILLAGER;
-            case ZOMBIE_VILLAGER -> Config.ZOMBIE_VILLAGER;
-            case WANDERING_TRADER -> Config.WANDERING_TRADER;
-            default -> false;
-        };
-    }
-
     public static void playPlaceSound(LivingEntity entity) {
         if (!entity.isSilent()) {
             switch (entity) {

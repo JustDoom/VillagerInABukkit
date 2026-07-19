@@ -1,5 +1,6 @@
 package com.imjustdoom.villagerinabucket;
 
+import com.imjustdoom.villagerinabucket.listener.DispenserListener;
 import com.imjustdoom.villagerinabucket.listener.InteractListener;
 import com.imjustdoom.villagerinabucket.listener.ReloadListener;
 import com.mojang.brigadier.Command;
@@ -53,6 +54,7 @@ public class VillagerInABucket extends JavaPlugin implements Listener {
         });
         getServer().getPluginManager().registerEvents(this, this);
         getServer().getPluginManager().registerEvents(new InteractListener(), this);
+        getServer().getPluginManager().registerEvents(new DispenserListener(), this);
 
         if (getServer().getPluginManager().getPlugin("BetterReload") != null) {
             getServer().getPluginManager().registerEvents(new ReloadListener(), this);

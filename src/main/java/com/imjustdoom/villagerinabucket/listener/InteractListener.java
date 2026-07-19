@@ -130,6 +130,7 @@ public class InteractListener implements Listener {
 
         entity.spawnAt(location, CreatureSpawnEvent.SpawnReason.BUCKET);
         if (player.getGameMode() != GameMode.CREATIVE) {
+            // Maybe just replacing it with a fresh Bucket ItemStack is better
             itemStack.unsetData(DataComponentTypes.CUSTOM_MODEL_DATA);
             itemStack.editMeta(meta -> {
                 meta.itemName(null);
