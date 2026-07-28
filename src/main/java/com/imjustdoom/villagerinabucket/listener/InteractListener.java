@@ -31,6 +31,11 @@ public class InteractListener implements Listener {
     @EventHandler
     public void villagerInteract(PlayerInteractEntityEvent event) {
         Player player = event.getPlayer();
+
+        if (player.getGameMode() == GameMode.SPECTATOR) {
+            return;
+        }
+
         ItemStack itemStack = player.getInventory().getItem(event.getHand());
         Entity clicked = event.getRightClicked();
         // Make sure it could possibly be a villager bucket item
@@ -83,6 +88,11 @@ public class InteractListener implements Listener {
     @EventHandler
     public void bucketInteract(PlayerInteractEvent event) {
         Player player = event.getPlayer();
+
+        if (player.getGameMode() == GameMode.SPECTATOR) {
+            return;
+        }
+
         ItemStack itemStack = event.getItem();
 
         // Ensure interaction point is not null
