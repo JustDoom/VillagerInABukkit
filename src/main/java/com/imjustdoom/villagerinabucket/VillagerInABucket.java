@@ -3,6 +3,7 @@ package com.imjustdoom.villagerinabucket;
 import com.imjustdoom.villagerinabucket.listener.DispenserListener;
 import com.imjustdoom.villagerinabucket.listener.InteractListener;
 import com.imjustdoom.villagerinabucket.listener.ReloadListener;
+import com.imjustdoom.villagerinabucket.listener.protection.WorldGuardProtectionListener;
 import com.mojang.brigadier.Command;
 import com.mojang.brigadier.tree.LiteralCommandNode;
 import io.papermc.paper.command.brigadier.CommandSourceStack;
@@ -17,6 +18,7 @@ import org.bukkit.NamespacedKey;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.player.PlayerJoinEvent;
+import org.bukkit.plugin.PluginManager;
 import org.bukkit.plugin.java.JavaPlugin;
 
 import java.io.IOException;
@@ -53,12 +55,25 @@ public class VillagerInABucket extends JavaPlugin implements Listener {
                     .build();
             commands.registrar().register(buildCommand, List.of("viab"));
         });
-        getServer().getPluginManager().registerEvents(this, this);
-        getServer().getPluginManager().registerEvents(new InteractListener(), this);
-        getServer().getPluginManager().registerEvents(new DispenserListener(), this);
 
-        if (getServer().getPluginManager().getPlugin("BetterReload") != null) {
-            getServer().getPluginManager().registerEvents(new ReloadListener(), this);
+        PluginManager pluginManager = getServer().getPluginManager();
+
+        if (pluginManager.isPluginEnabled("WorldGuard")) {
+            pluginManager.registerEvents(new WorldGuardProtectionListener(), this);
+            getLogger().info("Detected WorldGuard, registered listener integration");
+        }
+        if (pluginManager.isPluginEnabled("GriefPrevention")) {
+            pluginManager.registerEvents(new WorldGuardProtectionListener(), this);
+            getLogger().info("Detected GriefPrevention, registered listener integration");
+        }
+
+        pluginManager.registerEvents(this, this);
+        pluginManager.registerEvents(new InteractListener(), this);
+        pluginManager.registerEvents(new DispenserListener(), this);
+
+        if (pluginManager.isPluginEnabled("BetterReload")) {
+            pluginManager.registerEvents(new ReloadListener(), this);
+            getLogger().info("Detected BetterReload, registered listener integration");
         }
 
         Metrics metrics = new Metrics(this, 25722);

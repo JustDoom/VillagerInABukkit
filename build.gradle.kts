@@ -23,12 +23,18 @@ repositories {
         name = "jitpack"
         url = uri("https://jitpack.io")
     }
+    maven {
+        name = "worldguard"
+        url = uri("https://maven.enginehub.org/repo/")
+    }
 }
 
 dependencies {
     compileOnly("com.github.amnoah.betterreload:api:v1.0.0")
+    compileOnly("com.sk89q.worldguard:worldguard-bukkit:7.0.19")
+    compileOnly("com.github.GriefPrevention:GriefPrevention:16.18.7")
     implementation("org.bstats:bstats-bukkit:3.1.0")
-    paperweight.paperDevBundle("26.1.2.build.+")
+    paperweight.paperDevBundle("26.2.build.+")
 }
 
 java {
@@ -40,7 +46,7 @@ tasks {
     javadoc {
         options.encoding = "UTF-8"
         (options as StandardJavadocDocletOptions).apply {
-            links("https://jd.papermc.io/paper/26.1.2/")
+            links("https://jd.papermc.io/paper/26.2/")
             title = "${project.name} ${project.version} API"
             addStringOption("Xdoclint:none", "-quiet") // Suppress warnings for missing Javadoc
         }
@@ -70,9 +76,9 @@ tasks {
     }
 
     runServer {
-        minecraftVersion("26.1.2")
+        minecraftVersion("26.2")
         downloadPlugins {
-            modrinth("luckperms", "v5.5.53-bukkit")
+            modrinth("luckperms", "v5.5.71-bukkit")
         }
         dependsOn(shadowJar)
     }
