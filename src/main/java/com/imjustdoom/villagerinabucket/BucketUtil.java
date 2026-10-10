@@ -43,7 +43,7 @@ public class BucketUtil {
         return (entityType == EntityType.VILLAGER
                 || entityType == EntityType.WANDERING_TRADER
                 || entityType == EntityType.ZOMBIE_VILLAGER)
-                && !entity.isDead();
+                && entity.isValid() && entity.isPersistent();
     }
 
     /**
