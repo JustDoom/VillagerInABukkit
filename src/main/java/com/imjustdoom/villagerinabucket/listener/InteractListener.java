@@ -16,9 +16,11 @@ import org.bukkit.Material;
 import org.bukkit.NamespacedKey;
 import org.bukkit.block.BlockFace;
 import org.bukkit.entity.Entity;
+import org.bukkit.entity.EntityType;
 import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
+import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
 import org.bukkit.event.entity.CreatureSpawnEvent;
 import org.bukkit.event.player.PlayerInteractEntityEvent;
@@ -28,7 +30,7 @@ import org.bukkit.inventory.ItemStack;
 import java.util.HashMap;
 
 public class InteractListener implements Listener {
-    @EventHandler
+    @EventHandler(priority = EventPriority.HIGH)
     public void villagerInteract(PlayerInteractEntityEvent event) {
         Player player = event.getPlayer();
 
@@ -38,18 +40,22 @@ public class InteractListener implements Listener {
 
         ItemStack itemStack = player.getInventory().getItem(event.getHand());
         Entity clicked = event.getRightClicked();
-        // Make sure it could possibly be a villager bucket item
-        if (itemStack.getType() != Material.BUCKET) {
-            return;
-        }
+        EntityType entityType = clicked.getType();
 
         // If it is a villager bucket item cancel the event - stops milking and picking up multiple villagers in a single bucket (overrides old one)
+        // Needs to be run before checking the clicked entity type because the event won't be cancelled in the case it is
+        // not a supported entity type, but it needs to be cancelled if it ends up being an existing villager bucket item.
         if (BucketUtil.isVillagerBucket(itemStack)) {
             event.setCancelled(true);
             return;
         }
 
-        if (!BucketUtil.canPickup(player, clicked.getType())) {
+        // Make sure that the clicked entity type is actually one that can be picked up
+        if (entityType != EntityType.VILLAGER && entityType != EntityType.WANDERING_TRADER && entityType != EntityType.ZOMBIE_VILLAGER) {
+            return;
+        }
+
+        if (!BucketUtil.canPickup(player, entityType)) {
             player.sendMessage(Component.text("You are not allowed to pickup this villager"));
             return;
         }
@@ -85,7 +91,7 @@ public class InteractListener implements Listener {
         villagerPickupEvent.callEvent();
     }
 
-    @EventHandler
+    @EventHandler(priority = EventPriority.HIGH)
     public void bucketInteract(PlayerInteractEvent event) {
         Player player = event.getPlayer();
 
