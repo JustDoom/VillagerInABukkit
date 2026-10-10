@@ -13,7 +13,6 @@ import org.bukkit.block.Block;
 import org.bukkit.block.BlockFace;
 import org.bukkit.block.Dispenser;
 import org.bukkit.block.data.Directional;
-import org.bukkit.entity.EntityType;
 import org.bukkit.entity.LivingEntity;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
@@ -84,12 +83,7 @@ public class DispenserListener implements Listener {
 
         Collection<LivingEntity> entities = targetBlock.getLocation().getWorld().getNearbyLivingEntities(targetBlock.getLocation(), 1);
         for (LivingEntity entity : entities) {
-            if (!entity.isValid()
-                || (entity.getType() != EntityType.VILLAGER
-                    && entity.getType() != EntityType.WANDERING_TRADER
-                    && entity.getType() != EntityType.ZOMBIE_VILLAGER)) {
-                continue;
-            }
+            if (!BucketUtil.hasPossibilityOfPickingUp(entity)) continue;
 
             if (!BucketUtil.canDispenserPickup(entity)) {
                 VLog.log(String.format("Attempted to pickup disabled villager (%s) at %s", entity.getType(), targetBlock.getLocation()));

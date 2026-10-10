@@ -36,6 +36,17 @@ public class BucketUtil {
     }
 
     /**
+     * Does not return if the player is able to pick it up, but just checks if the situation is one where it *could* be picked up
+     */
+    public static boolean hasPossibilityOfPickingUp(Entity entity) {
+        EntityType entityType = entity.getType();
+        return (entityType == EntityType.VILLAGER
+                || entityType == EntityType.WANDERING_TRADER
+                || entityType == EntityType.ZOMBIE_VILLAGER)
+                && !entity.isDead();
+    }
+
+    /**
      * Creates a new Villager In A Bucket item
      * @param itemStack the ItemStack to modify
      * @param entity the entity to store in the bucket

@@ -16,7 +16,6 @@ import org.bukkit.Material;
 import org.bukkit.NamespacedKey;
 import org.bukkit.block.BlockFace;
 import org.bukkit.entity.Entity;
-import org.bukkit.entity.EntityType;
 import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
@@ -34,13 +33,10 @@ public class InteractListener implements Listener {
     public void villagerInteract(PlayerInteractEntityEvent event) {
         Player player = event.getPlayer();
 
-        if (player.getGameMode() == GameMode.SPECTATOR) {
-            return;
-        }
+        if (player.getGameMode() == GameMode.SPECTATOR) return;
 
         ItemStack itemStack = player.getInventory().getItem(event.getHand());
         Entity clicked = event.getRightClicked();
-        EntityType entityType = clicked.getType();
 
         // If it is a villager bucket item cancel the event - stops milking and picking up multiple villagers in a single bucket (overrides old one)
         // Needs to be run before checking the clicked entity type because the event won't be cancelled in the case it is
@@ -50,12 +46,10 @@ public class InteractListener implements Listener {
             return;
         }
 
-        // Make sure that the clicked entity type is actually one that can be picked up
-        if (entityType != EntityType.VILLAGER && entityType != EntityType.WANDERING_TRADER && entityType != EntityType.ZOMBIE_VILLAGER) {
-            return;
-        }
+        // Make sure there is the possibility of it being picked up. Makes sure it is alive and is the correct entity type
+        if (!BucketUtil.hasPossibilityOfPickingUp(clicked)) return;
 
-        if (!BucketUtil.canPickup(player, entityType)) {
+        if (!BucketUtil.canPickup(player, clicked.getType())) {
             player.sendMessage(Component.text("You are not allowed to pickup this villager"));
             return;
         }
@@ -95,27 +89,19 @@ public class InteractListener implements Listener {
     public void bucketInteract(PlayerInteractEvent event) {
         Player player = event.getPlayer();
 
-        if (player.getGameMode() == GameMode.SPECTATOR) {
-            return;
-        }
+        if (player.getGameMode() == GameMode.SPECTATOR) return;
 
         ItemStack itemStack = event.getItem();
 
         // Ensure interaction point is not null
-        if (event.getInteractionPoint() == null) {
-            return;
-        }
+        if (event.getInteractionPoint() == null) return;
 
         // Check if the action is related to a villager in a bucket item
-        if (!event.getAction().isRightClick() || !BucketUtil.isVillagerBucket(itemStack)) {
-            return;
-        }
+        if (!event.getAction().isRightClick() || !BucketUtil.isVillagerBucket(itemStack)) return;
         event.setCancelled(true);
 
         // Return after cancelling event if a block is null because it is either air or water which could override the villager
-        if (event.getClickedBlock() == null) {
-            return;
-        }
+        if (event.getClickedBlock() == null) return;
 
         LivingEntity entity = BucketUtil.entityFromBucket(itemStack, player.getWorld());
 
@@ -139,9 +125,7 @@ public class InteractListener implements Listener {
         }
 
         PreVillagerPlaceEvent preVillagerPlaceEvent = new PreVillagerPlaceEvent(entity, player, location, itemStack);
-        if (!preVillagerPlaceEvent.callEvent()) {
-            return;
-        }
+        if (!preVillagerPlaceEvent.callEvent()) return;
 
         entity.spawnAt(location, CreatureSpawnEvent.SpawnReason.BUCKET);
         if (player.getGameMode() != GameMode.CREATIVE) {
