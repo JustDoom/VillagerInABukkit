@@ -38,12 +38,13 @@ public class BucketUtil {
     /**
      * Does not return if the player is able to pick it up, but just checks if the situation is one where it *could* be picked up
      */
-    public static boolean hasPossibilityOfPickingUp(Entity entity) {
+    public static boolean hasPossibilityOfPickingUp(Entity entity, ItemStack itemStack) {
         EntityType entityType = entity.getType();
         return (entityType == EntityType.VILLAGER
                 || entityType == EntityType.WANDERING_TRADER
                 || entityType == EntityType.ZOMBIE_VILLAGER)
-                && entity.isValid() && entity.isPersistent();
+                && entity.isValid() && entity.isPersistent()
+                && itemStack.getType() == Material.BUCKET;
     }
 
     /**

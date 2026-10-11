@@ -47,7 +47,7 @@ public class InteractListener implements Listener {
         }
 
         // Make sure there is the possibility of it being picked up. Makes sure it is alive and is the correct entity type
-        if (!BucketUtil.hasPossibilityOfPickingUp(clicked)) return;
+        if (!BucketUtil.hasPossibilityOfPickingUp(clicked, itemStack)) return;
 
         if (!BucketUtil.canPickup(player, clicked.getType())) {
             player.sendMessage(Component.text("You are not allowed to pickup this villager"));

@@ -83,7 +83,7 @@ public class DispenserListener implements Listener {
 
         Collection<LivingEntity> entities = targetBlock.getLocation().getWorld().getNearbyLivingEntities(targetBlock.getLocation(), 1);
         for (LivingEntity entity : entities) {
-            if (!BucketUtil.hasPossibilityOfPickingUp(entity)) continue;
+            if (!BucketUtil.hasPossibilityOfPickingUp(entity, itemStack)) continue;
 
             if (!BucketUtil.canDispenserPickup(entity)) {
                 VLog.log(String.format("Attempted to pickup disabled villager (%s) at %s", entity.getType(), targetBlock.getLocation()));
