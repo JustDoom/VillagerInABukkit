@@ -8,16 +8,23 @@ import com.mojang.brigadier.Command;
 import com.mojang.brigadier.tree.LiteralCommandNode;
 import io.papermc.paper.command.brigadier.CommandSourceStack;
 import io.papermc.paper.command.brigadier.Commands;
+import io.papermc.paper.command.brigadier.argument.ArgumentTypes;
+import io.papermc.paper.command.brigadier.argument.resolvers.selector.PlayerSelectorArgumentResolver;
 import io.papermc.paper.plugin.lifecycle.event.types.LifecycleEvents;
 import net.kyori.adventure.resource.ResourcePackInfo;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.TextColor;
 import org.bstats.bukkit.Metrics;
 import org.bstats.charts.SimplePie;
+import org.bukkit.Location;
 import org.bukkit.NamespacedKey;
+import org.bukkit.command.CommandSender;
+import org.bukkit.entity.LivingEntity;
+import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.player.PlayerJoinEvent;
+import org.bukkit.inventory.ItemStack;
 import org.bukkit.plugin.PluginManager;
 import org.bukkit.plugin.java.JavaPlugin;
 
@@ -51,7 +58,18 @@ public class VillagerInABucket extends JavaPlugin implements Listener {
                         Config.init();
                         ctx.getSource().getSender().sendMessage(Component.text(PREFIX + " VillagerInABucket has been reloaded!", TEXT_COLOR));
                         return Command.SINGLE_SUCCESS;
-                    }))
+                    })).then(Commands.literal("forceplace").executes(ctx -> {
+                        if (!(ctx.getSource().getSender() instanceof Player player)) {
+                            ctx.getSource().getSender().sendMessage(Component.text(PREFIX + " You must be a player to run this command", TEXT_COLOR));
+                            return Command.SINGLE_SUCCESS;
+                        }
+
+                        return forceSpawnLogic(ctx.getSource().getSender(), player);
+                    }).then(Commands.argument("target", ArgumentTypes.player()).executes(ctx -> {
+                        final PlayerSelectorArgumentResolver resolver = ctx.getArgument("target", PlayerSelectorArgumentResolver.class);
+                        final Player player = resolver.resolve(ctx.getSource()).getFirst();
+                        return forceSpawnLogic(ctx.getSource().getSender(), player);
+                    })))
                     .build();
             commands.registrar().register(buildCommand, List.of("viab"));
         });
@@ -107,6 +125,25 @@ public class VillagerInABucket extends JavaPlugin implements Listener {
         }
     }
 
+    private int forceSpawnLogic(CommandSender sender, Player player) {
+        ItemStack itemStack = player.getInventory().getItem(player.getActiveItemHand());
+
+        if (!BucketUtil.hasEntityData(itemStack)) {
+            sender.sendMessage(Component.text(PREFIX + " No entity data found on item", TEXT_COLOR));
+            return Command.SINGLE_SUCCESS;
+        }
+
+        LivingEntity entity = BucketUtil.entityFromBucket(itemStack, player.getWorld());
+        Location location = player.getLocation();
+
+        if (BucketUtil.spawnVillagerFromBucket(entity, player, itemStack, location)) {
+            sender.sendMessage(Component.text(PREFIX + " Successfully force spawned entity", TEXT_COLOR));
+        } else {
+            sender.sendMessage(Component.text(PREFIX + " Force spawn was cancelled by something, possibly a land protection or other plugin", TEXT_COLOR));
+        }
+
+        return Command.SINGLE_SUCCESS;
+    }
 
     private static VillagerInABucket INSTANCE;
 

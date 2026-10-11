@@ -2,19 +2,24 @@ package com.imjustdoom.villagerinabucket;
 
 import com.destroystokyo.paper.entity.villager.Reputation;
 import com.destroystokyo.paper.entity.villager.ReputationType;
+import com.imjustdoom.villagerinabucket.event.PreVillagerPlaceEvent;
+import com.imjustdoom.villagerinabucket.event.VillagerPlaceEvent;
 import io.papermc.paper.datacomponent.DataComponentTypes;
 import io.papermc.paper.datacomponent.item.CustomModelData;
 import net.kyori.adventure.text.Component;
+import net.kyori.adventure.text.TextComponent;
 import net.kyori.adventure.text.format.TextColor;
 import net.kyori.adventure.text.format.TextDecoration;
 import org.bukkit.*;
 import org.bukkit.craftbukkit.entity.CraftVillager;
 import org.bukkit.entity.*;
 import org.bukkit.entity.memory.MemoryKey;
+import org.bukkit.event.entity.CreatureSpawnEvent;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.persistence.PersistentDataContainer;
 import org.bukkit.persistence.PersistentDataType;
 import org.bukkit.util.Vector;
+import org.jetbrains.annotations.NotNull;
 
 import javax.annotation.Nullable;
 import java.util.ArrayList;
@@ -26,8 +31,19 @@ public class BucketUtil {
      * @param itemStack the item stack to check
      * @return if the item is a Villager In A Bucket item
      */
-    public static boolean isVillagerBucket(ItemStack itemStack) {
-        if (itemStack == null || itemStack.getType() != Material.BUCKET || itemStack.getItemMeta() == null) {
+    public static boolean isVillagerBucket(@NotNull ItemStack itemStack) {
+        if (itemStack.getType() != Material.BUCKET) {
+            return false;
+        }
+
+        return hasEntityData(itemStack);
+    }
+
+    /**
+     * Direct data check without checking item type
+     */
+    public static boolean hasEntityData(@NotNull ItemStack itemStack) {
+        if (itemStack.getItemMeta() == null) {
             return false;
         }
 
@@ -200,5 +216,42 @@ public class BucketUtil {
             case WANDERING_TRADER -> player.hasPermission("villagerinabucket.wandering_trader.place");
             default -> true;
         };
+    }
+
+    /**
+     * The spawning code for Villagers from an item. Also handles sending custom events
+     */
+    public static boolean spawnVillagerFromBucket(LivingEntity entity, Player player, ItemStack itemStack, Location location) {
+        PreVillagerPlaceEvent preVillagerPlaceEvent = new PreVillagerPlaceEvent(entity, player, location, itemStack);
+        if (!preVillagerPlaceEvent.callEvent()) return false;
+
+        entity.spawnAt(location, CreatureSpawnEvent.SpawnReason.BUCKET);
+        if (player.getGameMode() != GameMode.CREATIVE) {
+            // Maybe just replacing it with a fresh Bucket ItemStack is better
+            itemStack.unsetData(DataComponentTypes.CUSTOM_MODEL_DATA);
+            itemStack.editMeta(meta -> {
+                meta.itemName(null);
+                if (meta.hasCustomName()) { // TODO: Make custom item names rename villager
+                    String customName = ((TextComponent) meta.customName()).content();
+                    if (customName.equals("Villager In A Bucket") || customName.equals("Zombie Villager In A Bucket") || customName.equals("Wandering Trader In A Bucket")) {
+                        meta.customName(null);
+                    }
+                }
+                meta.getPersistentDataContainer().remove(VillagerInABucket.get().key);
+                meta.setMaxStackSize(null);
+                if (meta.hasLore()) {
+                    meta.lore(null);
+                }
+            });
+        }
+
+        BucketUtil.playPlaceSound(entity);
+
+        VLog.debug("PLACE", player, entity, location);
+
+        VillagerPlaceEvent villagerPlaceEvent = new VillagerPlaceEvent(entity, player, location, itemStack);
+        villagerPlaceEvent.callEvent();
+
+        return true;
     }
 }

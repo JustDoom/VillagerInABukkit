@@ -4,12 +4,8 @@ import com.imjustdoom.villagerinabucket.BucketUtil;
 import com.imjustdoom.villagerinabucket.VLog;
 import com.imjustdoom.villagerinabucket.VillagerInABucket;
 import com.imjustdoom.villagerinabucket.event.PreVillagerPickupEvent;
-import com.imjustdoom.villagerinabucket.event.PreVillagerPlaceEvent;
 import com.imjustdoom.villagerinabucket.event.VillagerPickupEvent;
-import com.imjustdoom.villagerinabucket.event.VillagerPlaceEvent;
-import io.papermc.paper.datacomponent.DataComponentTypes;
 import net.kyori.adventure.text.Component;
-import net.kyori.adventure.text.TextComponent;
 import org.bukkit.GameMode;
 import org.bukkit.Location;
 import org.bukkit.Material;
@@ -21,7 +17,6 @@ import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
-import org.bukkit.event.entity.CreatureSpawnEvent;
 import org.bukkit.event.player.PlayerInteractEntityEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.inventory.ItemStack;
@@ -93,8 +88,8 @@ public class InteractListener implements Listener {
 
         ItemStack itemStack = event.getItem();
 
-        // Ensure interaction point is not null
-        if (event.getInteractionPoint() == null) return;
+        // Ensure interaction point and itemStack is not null
+        if (event.getInteractionPoint() == null || itemStack == null) return;
 
         // Check if the action is related to a villager in a bucket item
         if (!event.getAction().isRightClick() || !BucketUtil.isVillagerBucket(itemStack)) return;
@@ -124,35 +119,7 @@ public class InteractListener implements Listener {
             location.setY(Math.floor(location.getY()) + 1);
         }
 
-        PreVillagerPlaceEvent preVillagerPlaceEvent = new PreVillagerPlaceEvent(entity, player, location, itemStack);
-        if (!preVillagerPlaceEvent.callEvent()) return;
-
-        entity.spawnAt(location, CreatureSpawnEvent.SpawnReason.BUCKET);
-        if (player.getGameMode() != GameMode.CREATIVE) {
-            // Maybe just replacing it with a fresh Bucket ItemStack is better
-            itemStack.unsetData(DataComponentTypes.CUSTOM_MODEL_DATA);
-            itemStack.editMeta(meta -> {
-                meta.itemName(null);
-                if (meta.hasCustomName()) { // TODO: Make custom item names rename villager
-                    String customName = ((TextComponent) meta.customName()).content();
-                    if (customName.equals("Villager In A Bucket") || customName.equals("Zombie Villager In A Bucket") || customName.equals("Wandering Trader In A Bucket")) {
-                        meta.customName(null);
-                    }
-                }
-                meta.getPersistentDataContainer().remove(getKey());
-                meta.setMaxStackSize(null);
-                if (meta.hasLore()) {
-                    meta.lore(null);
-                }
-            });
-        }
-
-        BucketUtil.playPlaceSound(entity);
-
-        VLog.debug("PLACE", player, entity, location);
-
-        VillagerPlaceEvent villagerPlaceEvent = new VillagerPlaceEvent(entity, player, location, itemStack);
-        villagerPlaceEvent.callEvent();
+        BucketUtil.spawnVillagerFromBucket(entity, player, itemStack, location);
     }
 
     private NamespacedKey getKey() {
